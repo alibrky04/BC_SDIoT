@@ -2,6 +2,11 @@ import random
 import subprocess
 import os
 import re
+import matplotlib.pyplot as plt
+from time import sleep
+from Simulator import Simulator
+
+simulator = Simulator()
 
 class Controller:
     def __init__(self, COMMAND, glpk_folder_path, P_LOT = 5, W_CAR = 5, MAX_CAPACITY = 10):
@@ -11,61 +16,76 @@ class Controller:
         self.COMMAND = COMMAND
         self.glpk_folder_path = glpk_folder_path
 
-        self.parking_spaces = {f'p{i + 1}' : [0] * self.MAX_CAPACITY for i in range(self.P_LOT)}
-        self.parking_spaces_loads = {f'p{i + 1}' : sum(self.parking_spaces[f'p{i + 1}']) for i in range(self.P_LOT)}
+        # parking_spaces = [park state, car_load, res time]
+        self.parking_spaces = {f'p{i + 1}' : [[0, 0, 0] for _ in range(self.MAX_CAPACITY)] for i in range(self.P_LOT)}
+        self.parking_spaces_loads = {f'p{i + 1}' : 0 for i in range(self.P_LOT)}
         self.number_of_cars = {f'p{i + 1}' : 0 for i in range(self.P_LOT)}
-        self.waiting_cars = {f'Car{i + 1}': random.randint(1, 5) for i in range(self.W_CAR)}
+        self.waiting_cars = {f'Car{i + 1}': [0, 0] for i in range(self.W_CAR)} # [num_of_people, res_time]
+        self.gap = []
+        self.epoch_car_num = []
     
-    def createCars(self):
-        cars = {f'Car{i + 1}': random.randint(1, 5) for i in range(self.W_CAR)}
+    def createCars(self, doChange = False, new_car_num = 5):
+        if doChange:
+            self.W_CAR = new_car_num
+
+        self.waiting_cars = {f'Car{i + 1}': [random.randint(1, 5), 0] for i in range(self.W_CAR)}
         print('The cars in the queuing area')
         for i in range(self.W_CAR):
-            print(f'Number of people in car {i + 1} is', cars[f'Car{i + 1}'])
-        
-        input('Solve?')
-
-        return cars
+            print(f'Number of people in car {i + 1} is', self.waiting_cars[f'Car{i + 1}'][0])
 
     def createData(self):
-        self.waiting_cars = self.createCars()
-
-        data = f"""# Data section
+        data_start = """# Data section
 data;
 
-set ParkingSpaces := p1 p2 p3 p4 p5;
-set WaitingCars := Car1 Car2 Car3 Car4 Car5;
+"""
 
-param :
-        initLoad :=
-    p1      {self.parking_spaces_loads['p1']}
-    p2      {self.parking_spaces_loads['p2']}
-    p3      {self.parking_spaces_loads['p3']}
-    p4      {self.parking_spaces_loads['p4']}
-    p5      {self.parking_spaces_loads['p5']};
+        data_parking_space = "set ParkingSpaces :="
 
-param :
-        maxCarCapacity :=
-    p1      {self.MAX_CAPACITY}
-    p2      {self.MAX_CAPACITY}
-    p3      {self.MAX_CAPACITY}
-    p4      {self.MAX_CAPACITY}
-    p5      {self.MAX_CAPACITY};
+        for i in range(self.P_LOT):
+            data_parking_space += f" p{i + 1}"
+        
+        data_parking_space += ";\n"
 
-param :
-        parked_car_num :=
-    p1      {self.number_of_cars['p1']}
-    p2      {self.number_of_cars['p2']}
-    p3      {self.number_of_cars['p3']}
-    p4      {self.number_of_cars['p4']}
-    p5      {self.number_of_cars['p5']};
+        data_waiting_cars = "set WaitingCars :="""
+        
+        for i in range(self.W_CAR):
+            data_waiting_cars += f" Car{i + 1}"
 
-param :
-        numPeopleInCar :=
-    Car1        {self.waiting_cars['Car1']}
-    Car2        {self.waiting_cars['Car2']}
-    Car3        {self.waiting_cars['Car3']}
-    Car4        {self.waiting_cars['Car4']}
-    Car5        {self.waiting_cars['Car5']};"""
+        data_waiting_cars += ";\n\n"
+
+        data_init_load = """param :
+        initLoad :="""
+
+        for space in self.parking_spaces:
+            data_init_load += f"\n    {space}     {self.parking_spaces_loads[space]}"
+
+        data_init_load += ";\n\n"
+
+        data_max = """param :
+        maxCarCapacity :="""
+
+        for space in self.parking_spaces:
+            data_max += f"\n    {space}     {self.MAX_CAPACITY}"
+
+        data_max += ";\n\n"
+
+        data_parked_car = """param :
+        parked_car_num :="""
+
+        for space in self.parking_spaces:
+            data_parked_car += f"\n    {space}     {self.number_of_cars[space]}"
+
+        data_parked_car += ";\n\n"
+
+        data_num_people = """param :
+        numPeopleInCar :="""
+
+        for car, car_values in self.waiting_cars.items():
+            data_num_people += f"\n    {car}     {car_values[0]}"
+
+        data_num_people += ";"
+
+        data = data_start + data_parking_space + data_waiting_cars + data_init_load + data_max + data_parked_car + data_num_people
         
         return data
 
@@ -88,29 +108,33 @@ param :
                 
                 car_assignments = {}
                 parking_space_loads = {}
+                gap = 0
 
                 car_assignments_pattern = re.compile(r'isCarAssigned\[(\w+),(\w+)\].val = (\d+)')
                 parking_space_load_pattern = re.compile(r'parkingSpaceLoad\[(\w+)\].val = (\d+)')
+                load_gap_pattern = re.compile(r'totalLoadGap.val = (\d+)')
 
                 for line in solver_output.split('\n'):
                     if line.strip():
-                        match = car_assignments_pattern.match(line)
-                        if match:
-                            car = match.group(1)
-                            parking_space = match.group(2)
-                            value = int(match.group(3))
+                        car_match = car_assignments_pattern.match(line)
+                        load_match = parking_space_load_pattern.match(line)
+                        gap_match = load_gap_pattern.match(line)
+                        if car_match:
+                            car = car_match.group(1)
+                            parking_space = car_match.group(2)
+                            value = int(car_match.group(3))
 
                             if car not in car_assignments:
                                 car_assignments[car] = {}
 
                             car_assignments[car][parking_space] = value
-                        
-                        load_match = parking_space_load_pattern.match(line)
-                        if load_match:
+                        elif load_match:
                             parking_space = load_match.group(1)
                             load_value = int(load_match.group(2))
 
                             parking_space_loads[parking_space] = load_value
+                        elif gap_match:
+                            gap = int(gap_match.group(1))
 
                 assigned_parking_spaces = {}
 
@@ -118,18 +142,26 @@ param :
                     assigned_space = next((space for space, value in spaces.items() if value == 1), None)
                     assigned_parking_spaces[car] = assigned_space
 
-                return assigned_parking_spaces, parking_space_loads
+                return assigned_parking_spaces, parking_space_loads, gap
         except FileNotFoundError:
             print(f'The file "{self.glpk_folder_path}" does not exist.')
             return None
         
     def updateState(self):
-        assigned_parking_spaces, parking_space_loads = self.takeOutput()
+        assigned_parking_spaces, parking_space_loads, gap = self.takeOutput()
+
+        total_car = 0
+
+        print()
+
+        for car, value in self.waiting_cars.items():
+            value[1] = simulator.SetRemoveTime()
 
         for car, parking_space in assigned_parking_spaces.items():
             for i, lot in enumerate(self.parking_spaces[parking_space]):
-                if lot == 0:
-                    self.parking_spaces[parking_space][i] = 1
+                if lot[0] == 0:
+                    self.parking_spaces[parking_space][i] = [1, self.waiting_cars[car][0], self.waiting_cars[car][1]]
+                    print(f'{car} has been assigned to {parking_space}')
                     break
 
         for parking_space, value in parking_space_loads.items():
@@ -139,24 +171,104 @@ param :
         for car, parking_space in assigned_parking_spaces.items():
             if parking_space is not None:
                 self.number_of_cars[parking_space] += 1
-    
-    def showData(self):
-        for p, l in self.parking_spaces.items():
-            print(f'{p} :', ''.join('#' if space == 1 else '' for space in l), f'({self.number_of_cars[p]})')
 
-P_LOT = 5
+        for space, value in self.number_of_cars.items():
+            total_car += value
+
+        self.epoch_car_num.append(total_car)
+
+        self.gap.append(gap)
+    
+    def showParkingLots(self):
+        for p, l in self.parking_spaces.items():
+            print(f'{p} :', ''.join('|#|  ' if space[0] == 1 else '| |  ' for space in l), f'({self.number_of_cars[p]})')
+
+    def showData(self):
+        print()
+
+        self.showParkingLots()
+        
+        print()
+
+        for p,l in self.parking_spaces_loads.items():
+            print(f'The load of {p} is {l}')
+        
+        print()
+
+        print(f'Current gap is {self.gap[-1]}\n')
+
+        print('***********************************************\n')
+
+    def removeCars(self):
+        for space, lots in self.parking_spaces.items():
+            for i, car in enumerate(lots):
+                if car[2] <= simulator.GetUpTime() and car[0] != 0:
+                    print(f'A car in the {space} and {i + 1}. lot has left')
+
+                    self.parking_spaces_loads[space] -= car[1]
+                    car[0] = car[1] = car[2] = 0
+                    self.number_of_cars[space] -= 1
+
+                    controller.showParkingLots()
+                    print()
+
+    def createPlot(self, x, y, xlabel='X-axis', ylabel='Y-axis', title='Title'):
+        plt.figure(figsize=(10, 6))
+        plt.plot(x, y, marker='o', color='blue', label='Epoch-Gap')
+
+        for i, (xi, yi) in enumerate(zip(x, y)):
+            plt.text(xi, yi, f'Current total load = {self.epoch_car_num[i]}', color='red', fontsize=12, ha='left', va='bottom')
+
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.title(title)
+    
+        plt.text(0.5, 0.95, f'P_LOT = {self.P_LOT}\nM_CAP = {self.MAX_CAPACITY}\nα = {{2, 4, 6, 8, 10}}',
+                transform=plt.gcf().transFigure, fontsize=12, bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.5'))
+
+        plt.legend()
+
+        plt.show()
+
+    def __del__(self):
+        pass
+
+P_LOT = 3
+MAX_CAPACITY = 20
 W_CAR = 5
-MAX_CAPACITY = 10
 COMMAND = "glpsol --model SPS.mod --data SPS.dat --display SPS.out"
 glpk_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'GLPK'))
 
-ct = True
+ct = 0
+counter = 0
 
 controller = Controller(COMMAND, glpk_folder_path, P_LOT, W_CAR, MAX_CAPACITY)
+controller.createData()
 
-while ct:
+while ct < 5:
+    print('***********************************************\n')
+
+    controller.createCars()
     controller.writeData()
     controller.runSolver()
     controller.updateState()
     controller.showData()
-    input()
+
+    while counter < 10:
+        controller.removeCars()
+        sleep(1)
+        counter += 1
+
+    counter = 0
+    ct += 1
+    print()
+
+# controller.createPlot([2, 4, 6, 8, 10], controller.gap, 'W_CAR', 'Gap', 'Figure 1.c.1')
+
+# Fig. 1: Araba sayısı (araba-gap)
+    # a) (P_LOT * MAX_CAPACITY) % 10 (x = epoch, y = gap, 5 graph) (+)
+    # b) rand((P_LOT * MAX_CAPACITY) % 5, (P_LOT * MAX_CAPACITY) % 15) (x = epoch, y = gap, 5 graph) (+)
+    # c) Linear W_CAR (x = W_CAR, y = gap, 1 graph) (+)
+# Fig. 2: Park yeri sayısı (lot-gap)
+# Fig. 3: Park alanı sayısı (space-gap)
+# Fig. 4: İnsan sayısı (number-gap)
