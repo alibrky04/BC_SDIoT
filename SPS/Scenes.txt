@@ -1,0 +1,7 @@
+# Fig. 1: Araba sayısı (araba-gap)
+    # a) (P_LOT * MAX_CAPACITY) % 10 (x = epoch, y = gap, 5 graph) (+)
+    # b) rand((P_LOT * MAX_CAPACITY) % 5, (P_LOT * MAX_CAPACITY) % 15) (x = epoch, y = gap, 5 graph) (+)
+    # c) Linear W_CAR (x = W_CAR, y = gap, 1 graph) (+)
+# Fig. 2: Park yeri sayısı (lot-gap)
+# Fig. 3: Park alanı sayısı (space-gap)
+# Fig. 4: İnsan sayısı (number-gap)

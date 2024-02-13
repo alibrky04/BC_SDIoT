@@ -1,9 +1,7 @@
 import random
 import subprocess
-import os
 import re
 import matplotlib.pyplot as plt
-from time import sleep
 from Simulator import Simulator
 
 simulator = Simulator()
@@ -209,7 +207,7 @@ data;
                     car[0] = car[1] = car[2] = 0
                     self.number_of_cars[space] -= 1
 
-                    controller.showParkingLots()
+                    self.showParkingLots()
                     print()
 
     def createPlot(self, x, y, xlabel='X-axis', ylabel='Y-axis', title='Title'):
@@ -232,43 +230,3 @@ data;
 
     def __del__(self):
         pass
-
-P_LOT = 3
-MAX_CAPACITY = 20
-W_CAR = 5
-COMMAND = "glpsol --model SPS.mod --data SPS.dat --display SPS.out"
-glpk_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'GLPK'))
-
-ct = 0
-counter = 0
-
-controller = Controller(COMMAND, glpk_folder_path, P_LOT, W_CAR, MAX_CAPACITY)
-controller.createData()
-
-while ct < 5:
-    print('***********************************************\n')
-
-    controller.createCars()
-    controller.writeData()
-    controller.runSolver()
-    controller.updateState()
-    controller.showData()
-
-    while counter < 10:
-        controller.removeCars()
-        sleep(1)
-        counter += 1
-
-    counter = 0
-    ct += 1
-    print()
-
-# controller.createPlot([2, 4, 6, 8, 10], controller.gap, 'W_CAR', 'Gap', 'Figure 1.c.1')
-
-# Fig. 1: Araba sayısı (araba-gap)
-    # a) (P_LOT * MAX_CAPACITY) % 10 (x = epoch, y = gap, 5 graph) (+)
-    # b) rand((P_LOT * MAX_CAPACITY) % 5, (P_LOT * MAX_CAPACITY) % 15) (x = epoch, y = gap, 5 graph) (+)
-    # c) Linear W_CAR (x = W_CAR, y = gap, 1 graph) (+)
-# Fig. 2: Park yeri sayısı (lot-gap)
-# Fig. 3: Park alanı sayısı (space-gap)
-# Fig. 4: İnsan sayısı (number-gap)
