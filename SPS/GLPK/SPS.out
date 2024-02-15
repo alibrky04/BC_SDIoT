@@ -1,24 +1,16 @@
 Display statement at line 42
-isCarAssigned[Car1,p1].val = 0
+isCarAssigned[Car1,p1].val = 1
 isCarAssigned[Car1,p2].val = 0
-isCarAssigned[Car1,p3].val = 1
-isCarAssigned[Car2,p1].val = 0
-isCarAssigned[Car2,p2].val = 1
-isCarAssigned[Car2,p3].val = 0
-isCarAssigned[Car3,p1].val = 1
-isCarAssigned[Car3,p2].val = 0
-isCarAssigned[Car3,p3].val = 0
-isCarAssigned[Car4,p1].val = 1
-isCarAssigned[Car4,p2].val = 0
-isCarAssigned[Car4,p3].val = 0
-isCarAssigned[Car5,p1].val = 0
-isCarAssigned[Car5,p2].val = 0
-isCarAssigned[Car5,p3].val = 1
+isCarAssigned[Car1,p3].val = 0
+isCarAssigned[Car1,p4].val = 0
+isCarAssigned[Car1,p5].val = 0
 Display statement at line 43
-totalLoadGap.val = 2
+totalLoadGap.val = 3
 Display statement at line 44
-minLoad.val = 3
+minLoad.val = 0
 Display statement at line 45
-parkingSpaceLoad[p1].val = 5
-parkingSpaceLoad[p2].val = 3
-parkingSpaceLoad[p3].val = 3
+parkingSpaceLoad[p1].val = 3
+parkingSpaceLoad[p2].val = 0
+parkingSpaceLoad[p3].val = 0
+parkingSpaceLoad[p4].val = 0
+parkingSpaceLoad[p5].val = 0

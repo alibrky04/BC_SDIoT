@@ -1,7 +1,6 @@
 import random
 import subprocess
 import re
-import matplotlib.pyplot as plt
 from Simulator import Simulator
 
 simulator = Simulator()
@@ -209,24 +208,6 @@ data;
 
                     self.showParkingLots()
                     print()
-
-    def createPlot(self, x, y, xlabel='X-axis', ylabel='Y-axis', title='Title'):
-        plt.figure(figsize=(10, 6))
-        plt.plot(x, y, marker='o', color='blue', label='Epoch-Gap')
-
-        for i, (xi, yi) in enumerate(zip(x, y)):
-            plt.text(xi, yi, f'Current total load = {self.epoch_car_num[i]}', color='red', fontsize=12, ha='left', va='bottom')
-
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        plt.title(title)
-    
-        plt.text(0.5, 0.95, f'P_LOT = {self.P_LOT}\nM_CAP = {self.MAX_CAPACITY}\nα = {{2, 4, 6, 8, 10}}',
-                transform=plt.gcf().transFigure, fontsize=12, bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.5'))
-
-        plt.legend()
-
-        plt.show()
 
     def __del__(self):
         pass
