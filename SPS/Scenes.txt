@@ -1,5 +1,6 @@
 x-axis: time, p_lot, p_space
-y-axis: gap, people_in_lots, cars_in_lots
+y1-axis: gap, people in lots
+y2-axis: total number of cars (tnoc)
 ---------------
 
     number of arriving cars:
@@ -8,8 +9,18 @@ y-axis: gap, people_in_lots, cars_in_lots
         3. Exponential dist.
     
     number of people in arriving cars:
-        1. Normal dist.
-        2. Uniform dist.
-        3. Exponential dist.
+        1. Random between 1 and 5 per car
+
+    Figure 1 | x: time 
+        a. y1: gap (every epoch) | y2: tnoc (every epoch)
+        b. y1: people in lots (every epoch) | y2: tnoc (every epoch)
+
+    Figure 2 | x: p_lot (3 - 8)
+        a. y1: gap (last gap) | y2: tnoc (last tnoc)
+        b. y1: people in lots (last number of people) | y2: tnoc (last tnoc)
+
+    Figure 3 | x: p_space (10 - 50)
+        a. y1: gap (last gap) | y2: tnoc (last tnoc)
+        b. y1: people in lots (last number of people) | y2: tnoc (last tnoc)
 
 ---------------

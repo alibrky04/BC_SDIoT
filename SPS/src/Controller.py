@@ -3,10 +3,10 @@ import subprocess
 import re
 from Simulator import Simulator
 
-simulator = Simulator()
-
 class Controller:
     def __init__(self, COMMAND, glpk_folder_path, P_LOT = 5, W_CAR = 5, MAX_CAPACITY = 10):
+        self.simulator = Simulator()
+
         self.P_LOT = P_LOT
         self.W_CAR = W_CAR
         self.MAX_CAPACITY = MAX_CAPACITY
@@ -20,6 +20,7 @@ class Controller:
         self.waiting_cars = {f'Car{i + 1}': [0, 0] for i in range(self.W_CAR)} # [num_of_people, res_time]
         self.gap = []
         self.epoch_car_num = []
+        self.epoch_people_num = []
     
     def createCars(self, doChange = False, new_car_num = 5):
         if doChange:
@@ -147,13 +148,13 @@ data;
     def updateState(self):
         assigned_parking_spaces, parking_space_loads, gap = self.takeOutput()
 
-        total_car = 0
-
         print()
-
+        
+        # Set reservations for the appended cars
         for car, value in self.waiting_cars.items():
-            value[1] = simulator.SetRemoveTime()
+            value[1] = self.simulator.SetRemoveTime()
 
+        # Append the cars to the parking lots
         for car, parking_space in assigned_parking_spaces.items():
             for i, lot in enumerate(self.parking_spaces[parking_space]):
                 if lot[0] == 0:
@@ -161,19 +162,29 @@ data;
                     print(f'{car} has been assigned to {parking_space}')
                     break
 
+        # Adjust the load values of each parking lot
         for parking_space, value in parking_space_loads.items():
             if value is not None:
                 self.parking_spaces_loads[parking_space] = value
 
+        # Increase the number of cars in parking lots according to the solver
         for car, parking_space in assigned_parking_spaces.items():
             if parking_space is not None:
                 self.number_of_cars[parking_space] += 1
 
-        for space, value in self.number_of_cars.items():
-            total_car += value
+        # Used for storing total number of cars
+        total_car = sum(self.number_of_cars.values())
 
+        # Used for storing total number of people
+        total_people = total_people = sum(self.parking_spaces_loads.values())
+
+        # Store the total number of cars of this epoch
         self.epoch_car_num.append(total_car)
 
+        # Store the total number of people of this epoch
+        self.epoch_people_num.append(total_people)
+
+        # Store the gap of this epoch
         self.gap.append(gap)
     
     def showParkingLots(self):
@@ -199,7 +210,7 @@ data;
     def removeCars(self):
         for space, lots in self.parking_spaces.items():
             for i, car in enumerate(lots):
-                if car[2] <= simulator.GetUpTime() and car[0] != 0:
+                if car[2] <= self.simulator.GetUpTime() and car[0] != 0:
                     print(f'A car in the {space} and {i + 1}. lot has left')
 
                     self.parking_spaces_loads[space] -= car[1]
@@ -208,6 +219,31 @@ data;
 
                     self.showParkingLots()
                     print()
+        
+    def storeData(self, data_type):
+        with open('SPS/SimData.txt', 'a') as file:
+            if data_type == 1:
+                file.write('fig1\n')
+            elif data_type == 2:
+                file.write('fig2\n')
+
+            file.write('g: ')
+            for g in self.gap:
+                file.write(str(g) + ' ')
+            
+            file.write("\n")
+
+            file.write('c: ')
+            for total_car in self.epoch_car_num:
+                file.write(str(total_car) + ' ')
+
+            file.write('\n')
+
+            file.write('p: ')
+            for total_people in self.epoch_people_num:
+                file.write(str(total_people) + ' ')
+
+            file.write('\n\n--------------------\n\n')
 
     def __del__(self):
         pass

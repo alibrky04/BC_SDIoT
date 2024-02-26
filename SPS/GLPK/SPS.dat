@@ -30,4 +30,4 @@ param :
 
 param :
         numPeopleInCar :=
-    Car1     3;
+    Car1     1;

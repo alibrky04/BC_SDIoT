@@ -5,9 +5,11 @@ from Simulator import Simulator
 
 simulator = Simulator()
 
+EPOCH = 24
+WAIT_TIME = 10
 P_LOT = 5
 MAX_CAPACITY = 20
-W_CAR = simulator.normalDist(0)
+W_CAR = simulator.normalDist()
 COMMAND = "glpsol --model SPS.mod --data SPS.dat --display SPS.out"
 glpk_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'GLPK'))
 
@@ -15,9 +17,8 @@ ct = 0
 counter = 0
 
 controller = Controller(COMMAND, glpk_folder_path, P_LOT, W_CAR[0], MAX_CAPACITY)
-controller.createData()
 
-while ct < 18:
+while ct < EPOCH:
     print('***********************************************\n')
 
     controller.createCars(doChange=True, new_car_num=W_CAR[ct])
@@ -26,7 +27,7 @@ while ct < 18:
     controller.updateState()
     controller.showData()
 
-    while counter < 5:
+    while counter < WAIT_TIME:
         controller.removeCars()
         sleep(1)
         counter += 1
@@ -34,3 +35,5 @@ while ct < 18:
     counter = 0
     ct += 1
     print()
+
+controller.storeData(1)
