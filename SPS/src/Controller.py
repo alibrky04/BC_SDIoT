@@ -221,11 +221,13 @@ data;
                     print()
         
     def storeData(self, data_type):
-        with open('SPS/SimData.txt', 'a') as file:
+        with open('SPS/Datas/SimData.txt', 'a') as file:
             if data_type == 1:
                 file.write('fig1\n')
             elif data_type == 2:
-                file.write('fig2\n')
+                file.write(f'fig2 ({self.P_LOT} plot)\n')
+            elif data_type == 3:
+                file.write('fig3\n')
 
             file.write('g: ')
             for g in self.gap:

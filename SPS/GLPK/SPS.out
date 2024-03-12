@@ -5,7 +5,7 @@ isCarAssigned[Car1,p3].val = 0
 isCarAssigned[Car1,p4].val = 0
 isCarAssigned[Car1,p5].val = 0
 Display statement at line 43
-totalLoadGap.val = 1
+totalLoadGap.val = 5
 Display statement at line 44
 minLoad.val = 0
 Display statement at line 45
@@ -13,4 +13,4 @@ parkingSpaceLoad[p1].val = 0
 parkingSpaceLoad[p2].val = 1
 parkingSpaceLoad[p3].val = 0
 parkingSpaceLoad[p4].val = 0
-parkingSpaceLoad[p5].val = 0
+parkingSpaceLoad[p5].val = 4

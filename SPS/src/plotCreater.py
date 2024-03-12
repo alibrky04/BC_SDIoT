@@ -2,5 +2,4 @@ from Simulator import Simulator
 
 s = Simulator()
 
-s.createPlots("t_g")
-s.createPlots("t_p")
+s.createAveragePlots('t_g')

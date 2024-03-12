@@ -36,4 +36,4 @@ while ct < EPOCH:
     ct += 1
     print()
 
-controller.storeData(1)
+# controller.storeData(1)
