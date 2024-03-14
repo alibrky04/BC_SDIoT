@@ -1,12 +1,19 @@
 import time
 import random
+import sys
 import numpy as np
 from scipy.stats import norm
 import matplotlib.pyplot as plt
 
 class Simulator:
-    def __init__(self, StartTime = time.time()):
+    def __init__(self, StartTime = time.time(), simulationDays = 1):
         self.StartTime = StartTime
+        self.simulationDays = simulationDays
+        self.hours = [i for i in range(1, self.simulationDays * 24 + 1)]
+        self.half_hours = [i for i in range(1, self.simulationDays * 24 + 1) if i % (self.simulationDays * 2) == 0]
+        self.p_lots = np.array([i for i in range(3, 9)]) # [3-8]
+        self.data_num = 30
+        self.reqSize = 300
 
     def GetUpTime(self):
         Uptime = time.time() - self.StartTime
@@ -14,8 +21,7 @@ class Simulator:
     
     def SetTimeSlot(self):
         times = [[5, 15, 30, 60],[30, 60, 120, 180]]
-        TimeSlot = random.randint(0, 3)
-        return times[1][TimeSlot]
+        return random.choice(times[1])
 
     def SetRemoveTime(self):
         RemoveTime = self.SetTimeSlot() + self.GetUpTime()
@@ -48,17 +54,7 @@ class Simulator:
 
         return exponentialDist
     
-    def createPlots(self, plot_type):
-        hours = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
-        half_hours = [2,4,6,8,10,12,14,16,18,20,22,24]
-        p_lots = [3,4,5,6,7,8]
-
-        max_gap = []
-        max_cars = []
-        max_people = []
-
-        fig_type = ''
-
+    def createStandartPlots(self, plot_type):
         gap = []
         cars = []
         people = []
@@ -75,85 +71,109 @@ class Simulator:
                         cars = [int(num) for num in line.split()[1:] if num.isdigit()]
                     elif line.startswith('p:'):
                         people = [int(num) for num in line.split()[1:] if num.isdigit()]
-                    if line.startswith('fig2'):
-                        fig_type = 'fig2'
-                        if line.startswith('g:'):
-                            max_gap.append(max([int(num) for num in line.split()[1:] if num.isdigit()]))
-                        elif line.startswith('c:'):
-                            max_cars.append(max([int(num) for num in line.split()[1:] if num.isdigit()]))
-                        elif line.startswith('p:'):
-                            max_people.append(max([int(num) for num in line.split()[1:] if num.isdigit()]))
-                    elif line.startswith('fig3'):
-                        fig_type = 'fig3'
                 else:
                     fig, ax1 = plt.subplots()
 
-                    if fig_type == 'fig1':
-                        if plot_type == 't_g':
-                            title = 'Figure 1.a'
-                            x = hours
-                            y1 = gap
-                            y2 = cars
+                    if plot_type == 't_g':
+                        title = 'Figure 1.a'
+                        x = self.hours
+                        y1 = gap
+                        y2 = cars
 
-                            x_label = 'Hours'
-                            y1_label = 'Gap'
-                            y2_label = 'Cars'
+                        x_label = 'Hours'
+                        y1_label = 'Gap'
+                        y2_label = 'Cars'
 
-                        elif plot_type == "t_p":
-                            title = 'Figure 1.b'
-                            x = hours
-                            y1 = people
-                            y2 = cars
+                    elif plot_type == "t_p":
+                        title = 'Figure 1.b'
+                        x = self.hours
+                        y1 = people
+                        y2 = cars
 
-                            x_label = 'Hours'
-                            y1_label = 'People'
-                            y2_label = 'Cars'
+                        x_label = 'Hours'
+                        y1_label = 'People'
+                        y2_label = 'Cars'
 
-                        plt.title(title)
+                    plt.title(title)
 
-                        line1, = ax1.plot(x, y1, marker='o', linestyle='-', color='blue', label=y1_label)
-                        ax1.set_ylabel(y1_label, color='blue')
+                    line1, = ax1.plot(x, y1, marker='o', linestyle='-', color='blue', label=y1_label)
+                    ax1.set_ylabel(y1_label, color='blue')
 
-                        ax2 = ax1.twinx()
+                    ax2 = ax1.twinx()
 
-                        line2, = ax2.plot(x, y2, marker='o', linestyle='-', color='red', label=y2_label)
-                        ax2.set_ylabel(y2_label, color='red')
+                    line2, = ax2.plot(x, y2, marker='o', linestyle='-', color='red', label=y2_label)
+                    ax2.set_ylabel(y2_label, color='red')
 
-                        plt.xticks(half_hours)
-                        ax1.set_xlabel(x_label)
+                    plt.xticks(self.half_hours)
+                    ax1.set_xlabel(x_label)
 
-                        lines = [line1, line2]
-                        labels = [line.get_label() for line in lines]
+                    lines = [line1, line2]
+                    labels = [line.get_label() for line in lines]
 
-                        plt.legend(lines, labels, loc='upper left')
+                    plt.legend(lines, labels, loc='upper left')
                         
-                        plt.show()
-                    elif fig_type == 'fig2':
-                        if plot_type == "t_g":
-                            title = 'Figure 2.a'
-                            x = hours
-                            y1 = gap
-                            y2 = cars
+                    plt.show()
+    
+    def createBarPlots(self, plot_type):
+        gap = []
+        cars = []
+        people = []
 
-                            x_label = 'Hours'
-                            y1_label = 'Gap'
-                            y2_label = 'Cars'
-                        elif plot_type == "t_p":
-                            pass
-                    elif fig_type == 'fig3':
-                        if plot_type == "t_g":
-                            pass
-                        elif plot_type == "t_p":
-                            pass
+        bar_width = 0.2
+
+        with open('SPS/Datas/SimData.txt', 'r') as file:
+            lines = file.readlines()
+
+            for line in lines:
+                if line.startswith('g:'):
+                    gap.append(max([int(num) for num in line.split()[1:] if num.isdigit()]))
+                elif line.startswith('c:'):
+                    cars.append(max([int(num) for num in line.split()[1:] if num.isdigit()]))
+                elif line.startswith('p:'):
+                    people.append(max([int(num) for num in line.split()[1:] if num.isdigit()]))
+
+            if plot_type == 't_g_2':
+                title = 'Figure 2.a'
+                x = self.p_lots
+                y1 = gap
+                y2 = cars
+
+                x_label = 'Parking Lots'
+                y1_label = 'Gap'
+                y2_label = 'Cars'
+
+            elif plot_type == "t_p_2":
+                title = 'Figure 2.b'
+                x = self.p_lots
+                y1 = people
+                y2 = cars
+
+                x_label = 'Parking Lots'
+                y1_label = 'People'
+                y2_label = 'Cars'
+
+            fig, ax1 = plt.subplots()
+
+            plt.title(title)
+
+            ax1.bar(x - bar_width/2, y1, bar_width, color='blue', alpha=0.7, label=y1_label)
+            ax1.set_ylabel(y1_label, color='blue')
+
+            ax2 = ax1.twinx()
+
+            ax2.bar(x + bar_width, y2, bar_width, color='red', alpha=0.7, label=y2_label)
+            ax2.set_ylabel(y2_label, color='red')
+
+            plt.xticks(self.p_lots)
+            ax1.set_xlabel(x_label)
+                        
+            plt.show()
         
     def createAveragePlots(self, plot_type):
-        hours = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
-        half_hours = [2,4,6,8,10,12,14,16,18,20,22,24]
         gap = []
         cars = []
         people = []
         gapError = [0] * 24
-        data_num = 30
 
         with open('SPS/Datas/SimData.txt', 'r') as file:
             lines = file.readlines()
@@ -174,11 +194,11 @@ class Simulator:
                 for i, gapNumber in enumerate(g):
                     gapError[i] += abs(gapNumber - averages[0][i])
 
-            averageGapErrors = [round(x / data_num) for x in gapError]
+            averageGapErrors = [round(x / self.data_num) for x in gapError]
 
             if plot_type == 't_g':
                 title = 'Figure 1.a'
-                x = hours
+                x = self.hours
                 y1 = averages[0]
                 y2 = averages[1]
 
@@ -190,7 +210,7 @@ class Simulator:
 
             elif plot_type == "t_p":
                 title = 'Figure 1.b'
-                x = hours
+                x = self.hours
                 y1 = averages[2]
                 y2 = averages[1]
 
@@ -210,7 +230,7 @@ class Simulator:
             line2, = ax2.plot(x, y2, marker='o', linestyle='-', color='red', label=y2_label)
             ax2.set_ylabel(y2_label, color='red')
 
-            plt.xticks(half_hours)
+            plt.xticks(self.half_hours)
             ax1.set_xlabel(x_label)
 
             ax1.errorbar(x, y1, yerr=averageErrors, ecolor='red', capsize=5)
@@ -221,6 +241,32 @@ class Simulator:
             plt.legend(lines, labels, loc='upper left')
                         
             plt.show()
+        
+    def createTransactionPlots(self, distribution, title):
+        epoch_size = 0
+        total_size = []
+        distList = []
+        x_label = 'Hours'
+        y_label = 'Ledger Size (Byte)'
+
+        for _ in range(self.simulationDays):
+            distList.append(distribution)
+
+        for dist in distList:
+            for req in dist:
+                epoch_size += req * self.reqSize
+                total_size.append(epoch_size)
+        
+        plt.title(title)
+        
+        plt.plot(self.hours, total_size, marker='o', linestyle='-', color='blue', label=y_label)
+
+        plt.xticks(self.half_hours)
+
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+
+        plt.show()
 
     def __del__(self):
         pass

@@ -10,7 +10,7 @@ param :
     p2     0
     p3     0
     p4     0
-    p5     4;
+    p5     0;
 
 param :
         maxCarCapacity :=
@@ -26,8 +26,8 @@ param :
     p2     0
     p3     0
     p4     0
-    p5     1;
+    p5     0;
 
 param :
         numPeopleInCar :=
-    Car1     1;
+    Car1     3;
