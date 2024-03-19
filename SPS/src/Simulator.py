@@ -13,7 +13,7 @@ class Simulator:
         self.half_hours = [i for i in range(1, self.simulationDays * 24 + 1) if i % (self.simulationDays * 2) == 0]
         self.p_lots = np.array([i for i in range(3, 9)]) # [3-8]
         self.data_num = 30
-        self.reqSize = 300
+        self.reqSize = 0.29
 
     def GetUpTime(self):
         Uptime = time.time() - self.StartTime
@@ -75,7 +75,6 @@ class Simulator:
                     fig, ax1 = plt.subplots()
 
                     if plot_type == 't_g':
-                        title = 'Figure 1.a'
                         x = self.hours
                         y1 = gap
                         y2 = cars
@@ -85,7 +84,6 @@ class Simulator:
                         y2_label = 'Cars'
 
                     elif plot_type == "t_p":
-                        title = 'Figure 1.b'
                         x = self.hours
                         y1 = people
                         y2 = cars
@@ -93,8 +91,6 @@ class Simulator:
                         x_label = 'Hours'
                         y1_label = 'People'
                         y2_label = 'Cars'
-
-                    plt.title(title)
 
                     line1, = ax1.plot(x, y1, marker='o', linestyle='-', color='blue', label=y1_label)
                     ax1.set_ylabel(y1_label, color='blue')
@@ -111,6 +107,8 @@ class Simulator:
                     labels = [line.get_label() for line in lines]
 
                     plt.legend(lines, labels, loc='upper left')
+                    ax1.grid()
+                    ax2.grid()
                         
                     plt.show()
     
@@ -133,7 +131,6 @@ class Simulator:
                     people.append(max([int(num) for num in line.split()[1:] if num.isdigit()]))
 
             if plot_type == 't_g_2':
-                title = 'Figure 2.a'
                 x = self.p_lots
                 y1 = gap
                 y2 = cars
@@ -143,7 +140,6 @@ class Simulator:
                 y2_label = 'Cars'
 
             elif plot_type == "t_p_2":
-                title = 'Figure 2.b'
                 x = self.p_lots
                 y1 = people
                 y2 = cars
@@ -153,8 +149,6 @@ class Simulator:
                 y2_label = 'Cars'
 
             fig, ax1 = plt.subplots()
-
-            plt.title(title)
 
             ax1.bar(x - bar_width/2, y1, bar_width, color='blue', alpha=0.7, label=y1_label)
             ax1.set_ylabel(y1_label, color='blue')
@@ -174,6 +168,7 @@ class Simulator:
         cars = []
         people = []
         gapError = [0] * 24
+        peopleError = [0] * 24
 
         with open('SPS/Datas/SimData.txt', 'r') as file:
             lines = file.readlines()
@@ -189,38 +184,38 @@ class Simulator:
             transposed_lists = zip(*gap), zip(*cars), zip(*people)
 
             averages = [[round(sum(nums) / len(nums)) for nums in group] for group in transposed_lists]
-
-            for g in gap:
-                for i, gapNumber in enumerate(g):
-                    gapError[i] += abs(gapNumber - averages[0][i])
-
-            averageGapErrors = [round(x / self.data_num) for x in gapError]
-
+            
             if plot_type == 't_g':
-                title = 'Figure 1.a'
                 x = self.hours
                 y1 = averages[0]
                 y2 = averages[1]
 
-                averageErrors = averageGapErrors
+                for g in gap:
+                    for i, gapNumber in enumerate(g):
+                        gapError[i] += abs(gapNumber - averages[0][i])
+
+                averageErrors = [round(x / self.data_num) for x in gapError]
 
                 x_label = 'Hours'
                 y1_label = 'Gap'
                 y2_label = 'Cars'
 
             elif plot_type == "t_p":
-                title = 'Figure 1.b'
                 x = self.hours
                 y1 = averages[2]
                 y2 = averages[1]
+
+                for p in people:
+                    for i, peopleNumber in enumerate(p):
+                        peopleError[i] += abs(peopleNumber - averages[1][i])
+
+                averageErrors = [round(x / self.data_num) for x in peopleError]
 
                 x_label = 'Hours'
                 y1_label = 'People'
                 y2_label = 'Cars'
 
             fig, ax1 = plt.subplots()
-
-            plt.title(title)
 
             line1, = ax1.plot(x, y1, marker='o', linestyle='-', color='blue', label=y1_label)
             ax1.set_ylabel(y1_label, color='blue')
@@ -233,21 +228,22 @@ class Simulator:
             plt.xticks(self.half_hours)
             ax1.set_xlabel(x_label)
 
-            ax1.errorbar(x, y1, yerr=averageErrors, ecolor='red', capsize=5)
+            ax1.errorbar(x, y1, yerr=averageErrors, ecolor='black', capsize=5, linewidth=0.5)
 
             lines = [line1, line2]
             labels = [line.get_label() for line in lines]
 
             plt.legend(lines, labels, loc='upper left')
+            ax1.grid(linewidth=0.25)
                         
             plt.show()
         
-    def createTransactionPlots(self, distribution, title):
+    def createTransactionPlots(self, distribution):
         epoch_size = 0
         total_size = []
         distList = []
         x_label = 'Hours'
-        y_label = 'Ledger Size (Byte)'
+        y_label = 'Ledger Size (MB)'
 
         for _ in range(self.simulationDays):
             distList.append(distribution)
@@ -257,14 +253,15 @@ class Simulator:
                 epoch_size += req * self.reqSize
                 total_size.append(epoch_size)
         
-        plt.title(title)
-        
         plt.plot(self.hours, total_size, marker='o', linestyle='-', color='blue', label=y_label)
 
         plt.xticks(self.half_hours)
 
         plt.xlabel(x_label)
         plt.ylabel(y_label)
+
+        plt.legend()
+        plt.grid()
 
         plt.show()
 
