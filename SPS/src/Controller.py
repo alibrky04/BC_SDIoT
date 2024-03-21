@@ -220,7 +220,7 @@ data;
                     self.showParkingLots()
                     print()
         
-    def storeData(self, data_type):
+    def storeData(self, data_type, start_hour = 0):
         with open('SPS/Datas/SimData.txt', 'a') as file:
             if data_type == 1:
                 file.write('fig1\n')
@@ -230,19 +230,19 @@ data;
                 file.write('fig3\n')
 
             file.write('g: ')
-            for g in self.gap:
+            for g in self.gap[start_hour:]:
                 file.write(str(g) + ' ')
             
             file.write("\n")
 
             file.write('c: ')
-            for total_car in self.epoch_car_num:
+            for total_car in self.epoch_car_num[start_hour:]:
                 file.write(str(total_car) + ' ')
 
             file.write('\n')
 
             file.write('p: ')
-            for total_people in self.epoch_people_num:
+            for total_people in self.epoch_people_num[start_hour:]:
                 file.write(str(total_people) + ' ')
 
             file.write('\n\n--------------------\n\n')

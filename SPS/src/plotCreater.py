@@ -1,6 +1,6 @@
 from Simulator import Simulator
 
-s = Simulator()
+s = Simulator(simulationDays=[1,7,30])
 
 # s.createStandartPlots('t_g')
 
@@ -8,4 +8,4 @@ s = Simulator()
 
 # s.createBarPlots('t_p_2')
 
-# s.createTransactionPlots(s.normalDist())
+s.createTransactionPlots('normal')
