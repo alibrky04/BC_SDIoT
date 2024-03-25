@@ -9,9 +9,9 @@ simulator = Simulator()
 EPOCH = 24
 WAIT_TIME = 10
 MAX_SIM = 30
-MAX_DAY = 1
+MAX_DAY = 2
 P_LOT = 5
-MAX_CAPACITY = 20
+MAX_CAPACITY = 25
 COMMAND = "glpsol --model SPS.mod --data SPS.dat --display SPS.out"
 glpk_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'GLPK'))
 
@@ -21,7 +21,7 @@ sim_count = 0
 day = 1
 
 while sim_count < MAX_SIM:
-    distribution = simulator.exponentialDist(end=random.randint(10,12))
+    distribution = simulator.exponentialDist(start=2, end=random.choice([10, 11]))
 
     W_CAR = distribution
     controller = Controller(COMMAND, glpk_folder_path, P_LOT, W_CAR[ct], MAX_CAPACITY)
@@ -51,13 +51,12 @@ while sim_count < MAX_SIM:
 
     print(f'Simulation {sim_count + 1} has ended.')
 
-    controller.storeData(1, start_hour=0)
+    controller.storeData(1, start_hour=EPOCH * (MAX_DAY - 1))
 
     print('Data is recorded.')
     print('Next simulation will start in 5 seconds.\n')
 
     ct = 0
-    counter = 0
     day = 1
 
     sleep(5)

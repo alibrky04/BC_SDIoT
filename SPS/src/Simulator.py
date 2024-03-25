@@ -6,7 +6,7 @@ from scipy.stats import norm
 import matplotlib.pyplot as plt
 
 class Simulator:
-    def __init__(self, StartTime = time.time(), simulationDays = [1]):
+    def __init__(self, StartTime = time.time(), simulationDays = [1,1,1]):
         self.StartTime = StartTime
         self.simulationDays = simulationDays
         self.hours = [i for i in range(1, self.simulationDays[0] * 24 + 1)]
@@ -25,8 +25,7 @@ class Simulator:
         return int(Uptime)
     
     def SetTimeSlot(self):
-        times = [[5, 15, 30, 60],[30, 60, 120, 180]]
-        return random.choice(times[1])
+        return random.randint(30,180)
 
     def SetRemoveTime(self):
         RemoveTime = self.SetTimeSlot() + self.GetUpTime()
@@ -220,7 +219,7 @@ class Simulator:
                 y1_label = 'People'
                 y2_label = 'Cars'
 
-            fig, ax1 = plt.subplots()
+            fig, ax1 = plt.subplots(figsize=(6,4), dpi=150)
 
             line1, = ax1.plot(x, y1, marker='o', linestyle='-', color='blue', label=y1_label)
             ax1.set_ylabel(y1_label, color='blue')
@@ -233,7 +232,7 @@ class Simulator:
             plt.xticks(self.half_hours)
             ax1.set_xlabel(x_label)
 
-            ax1.errorbar(x, y1, yerr=averageErrors, ecolor='black', capsize=5, linewidth=0.5)
+            ax1.errorbar(x, y1, yerr=averageErrors, ecolor='black', capsize=5, linewidth=0.1)
 
             lines = [line1, line2]
             labels = [line.get_label() for line in lines]
