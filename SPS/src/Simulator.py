@@ -6,16 +6,23 @@ from scipy.stats import norm
 import matplotlib.pyplot as plt
 
 class Simulator:
-    def __init__(self, StartTime = time.time(), simulationDays = [1,1,1]):
+    def __init__(self, StartTime = time.time(), days = 1, weeks = 1, months = 1):
         self.StartTime = StartTime
-        self.simulationDays = simulationDays
-        self.hours = [i for i in range(1, self.simulationDays[0] * 24 + 1)]
-        self.week = [i for i in range(1, self.simulationDays[1] * 24 + 1)]
-        self.month = [i for i in range(1, self.simulationDays[2] * 24 + 1)]
-        self.half_hours = [i for i in range(1, self.simulationDays[0] * 24 + 1) if i % (self.simulationDays[0] * 2) == 0]
-        self.p_lots = np.array([i for i in range(3, 9)]) # [3-8]
-        self.week_days = [i * 24 for i in range(1,8)]
-        self.month_weeks = [i * 180 for i in range(1,5)]
+        self.weeks = weeks
+        self.months = months
+        self.simDays = {'days' : days,
+                        'weekDays' : self.weeks * 7,
+                        'monthDays' : self.months * 30}
+        
+        self.xAxises = {'hours' : [i for i in range(1, self.simDays['days'] * 24 + 1)],
+                        'weeks' : [i for i in range(1, self.simDays['weekDays'] * 24 + 1)],
+                        'months' : [i for i in range(1, self.simDays['monthDays'] * 24 + 1)],
+                        'pLots' : [i for i in range(3, 9)]}
+        
+        self.xAxisTicks = {'halfHours' : [i for i in range(1, self.simDays['days'] * 24 + 1) if i % (self.simDays['days'] * 2) == 0],
+                            'pLots' : [i for i in range(3, 9)],
+                            'weekDays' : [i * 24 for i in range(1, self.simDays['weekDays'] + 1)],
+                            'monthWeeks' : [i * 180 for i in range(1, self.months * 4 + 1)]}
         self.data_num = 30
         self.reqSize = 0.29
         self.blockSize = 0.05
@@ -79,7 +86,7 @@ class Simulator:
                     fig, ax1 = plt.subplots()
 
                     if plot_type == 't_g':
-                        x = self.hours
+                        x = self.xAxises['hours']
                         y1 = gap
                         y2 = cars
 
@@ -88,7 +95,7 @@ class Simulator:
                         y2_label = 'Cars'
 
                     elif plot_type == "t_p":
-                        x = self.hours
+                        x = self.xAxises['hours']
                         y1 = people
                         y2 = cars
 
@@ -104,7 +111,7 @@ class Simulator:
                     line2, = ax2.plot(x, y2, marker='o', linestyle='-', color='red', label=y2_label)
                     ax2.set_ylabel(y2_label, color='red')
 
-                    plt.xticks(self.half_hours)
+                    plt.xticks(self.xAxisTicks['halfHours'])
                     ax1.set_xlabel(x_label)
 
                     lines = [line1, line2]
@@ -135,7 +142,7 @@ class Simulator:
                     people.append(max([int(num) for num in line.split()[1:] if num.isdigit()]))
 
             if plot_type == 't_g_2':
-                x = self.p_lots
+                x = self.xAxises['pLots']
                 y1 = gap
                 y2 = cars
 
@@ -144,7 +151,7 @@ class Simulator:
                 y2_label = 'Cars'
 
             elif plot_type == "t_p_2":
-                x = self.p_lots
+                x = self.xAxises['pLots']
                 y1 = people
                 y2 = cars
 
@@ -162,7 +169,7 @@ class Simulator:
             ax2.bar(x + bar_width, y2, bar_width, color='red', alpha=0.7, label=y2_label)
             ax2.set_ylabel(y2_label, color='red')
 
-            plt.xticks(self.p_lots)
+            plt.xticks(self.xAxisTicks['pLots'])
             ax1.set_xlabel(x_label)
                         
             plt.show()
@@ -187,10 +194,11 @@ class Simulator:
                 
             transposed_lists = zip(*gap), zip(*cars), zip(*people)
 
+            # gap, cars, people
             averages = [[round(sum(nums) / len(nums)) for nums in group] for group in transposed_lists]
             
             if plot_type == 't_g':
-                x = self.hours
+                x = self.xAxises['hours']
                 y1 = averages[0]
                 y2 = averages[1]
 
@@ -205,7 +213,7 @@ class Simulator:
                 y2_label = 'Cars'
 
             elif plot_type == "t_p":
-                x = self.hours
+                x = self.xAxises['hours']
                 y1 = averages[2]
                 y2 = averages[1]
 
@@ -229,10 +237,10 @@ class Simulator:
             line2, = ax2.plot(x, y2, marker='o', linestyle='-', color='red', label=y2_label)
             ax2.set_ylabel(y2_label, color='red')
 
-            plt.xticks(self.half_hours)
+            plt.xticks(self.xAxisTicks['halfHours'])
             ax1.set_xlabel(x_label)
 
-            ax1.errorbar(x, y1, yerr=averageErrors, ecolor='black', capsize=5, linewidth=0.1)
+            ax1.errorbar(x, y1, yerr=averageErrors, ecolor='black', capsize=2.5, capthick=0.5, linewidth=0.15)
 
             lines = [line1, line2]
             labels = [line.get_label() for line in lines]
@@ -244,72 +252,54 @@ class Simulator:
         
     def createTransactionPlots(self, distribution):
         epoch_size = 0
-        day_total_size = []
-        week_total_size = []
-        month_total_size = []
-        dayDistList = []
-        weekDistList = []
-        monthDistList = []
-        x1_label = '1 Day'
-        x2_label = '1 Week'
-        x3_label = '1 Month'
+        totalSizes = {'dayTotalSize' : [],
+                      'weekTotalSize' : [],
+                      'monthTotalSize' : []}
+        
+        distLists = {'dayDistList': [],
+                     'weekDistList' : [],
+                     'monthDistList' : []}
+        
+        xLabels = {'x1Label' : '1 Day',
+                   'x2Label' : '1 Week',
+                   'x3Label' : '1 Month'}
+        
         y_label = 'Ledger Size (MB)'
 
         if distribution == 'normal':
-            for _ in range(self.simulationDays[0]):
-                dayDistList.append(self.normalDist(dev=random.choice( [3, 3.25, 3.5, 3.75, 4] )))
-
-            for _ in range(self.simulationDays[1]):
-                weekDistList.append(self.normalDist(dev=random.choice( [3, 3.25, 3.5, 3.75, 4] )))
-
-            for _ in range(self.simulationDays[2]):
-                monthDistList.append(self.normalDist(dev=random.choice( [3, 3.25, 3.5, 3.75, 4] )))
+            for d, dl in zip(self.simDays.values(), distLists.values()):
+                for _ in range(d):
+                    dl.append(self.normalDist(dev=random.choice( [3.75, 4] )))
         elif distribution == 'expo':
-            for _ in range(self.simulationDays[0]):
-                dayDistList.append(self.exponentialDist(start=random.choice( [1, 2, 3] ), end= random.choice( [10, 11, 12] )))
+            for d, dl in zip(self.simDays.values(), distLists.values()):
+                for _ in range(d):
+                    dl.append(self.exponentialDist(start=random.choice( [1, 2, 3] ), end= random.choice( [10, 11] )))
 
-            for _ in range(self.simulationDays[1]):
-                weekDistList.append(self.exponentialDist(start=random.choice( [1, 2, 3] ), end= random.choice( [10, 11, 12] )))
-
-            for _ in range(self.simulationDays[2]):
-                monthDistList.append(self.exponentialDist(start=random.choice( [1, 2, 3] ), end= random.choice( [10, 11, 12] )))
-
-        for dist in dayDistList:
+        for dist, size in zip(distLists.values(), totalSizes.values()):
             for req in dist:
-                epoch_size += req * self.reqSize + self.blockSize
-                day_total_size.append(epoch_size)
-
-        epoch_size = 0
-        
-        for dist in weekDistList:
-            for req in dist:
-                epoch_size += req * self.reqSize + self.blockSize
-                week_total_size.append(epoch_size)
-        
-        epoch_size = 0
-        
-        for dist in monthDistList:
-            for req in dist:
-                epoch_size += req * self.reqSize + self.blockSize
-                month_total_size.append(epoch_size)
+                for r in req:
+                    epoch_size += r * self.reqSize + self.blockSize
+                    size.append(epoch_size)
+                
+            epoch_size = 0
 
         fig, axs = plt.subplots(1, 3, figsize=(15, 5))
 
-        axs[0].plot(self.hours, day_total_size, marker='o', linestyle='-', color='blue', label=y_label)
-        axs[0].set_xticks(self.half_hours)
-        axs[0].set_xlabel(x1_label)
+        axs[0].scatter(self.xAxises['hours'], totalSizes['dayTotalSize'], color='blue', s=20, label=y_label)
+        axs[0].set_xticks(self.xAxisTicks['halfHours'])
+        axs[0].set_xlabel(xLabels['x1Label'])
         axs[0].set_ylabel(y_label)
 
-        axs[1].plot(self.week, week_total_size, marker='o', markevery = (0, 7), linestyle='-', color='red', label=y_label)
-        axs[1].set_xticks(self.week_days)
+        axs[1].scatter(self.xAxises['weeks'], totalSizes['weekTotalSize'], color='red', s=5, label=y_label)
+        axs[1].set_xticks(self.xAxisTicks['weekDays'])
         axs[1].set_xticklabels([f'Day {i}' for i in range(1, 8)])
-        axs[1].set_xlabel(x2_label)
+        axs[1].set_xlabel(xLabels['x2Label'])
         axs[1].set_ylabel(y_label)
 
-        axs[2].plot(self.month, month_total_size, marker='o', markevery = (0, 30), linestyle='-', color='green', label=y_label)
-        axs[2].set_xticks(self.month_weeks)
+        axs[2].scatter(self.xAxises['months'], totalSizes['monthTotalSize'], color='green', s=5, label=y_label)
+        axs[2].set_xticks(self.xAxisTicks['monthWeeks'])
         axs[2].set_xticklabels([f'Week {i}' for i in range(1, 5)])
-        axs[2].set_xlabel(x3_label)
+        axs[2].set_xlabel(xLabels['x3Label'])
         axs[2].set_ylabel(y_label)
 
         for i in range(3):
