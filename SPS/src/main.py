@@ -21,9 +21,17 @@ sim_count = 0
 day = 1
 
 while sim_count < MAX_SIM:
-    distribution = simulator.exponentialDist(start=2, end=random.choice([10, 11]))
+    dSlice1 = simulator.exponentialDist(start=2, end=6, length=8)
+    dSlice2 = simulator.exponentialDist(start=4, end=12, length=8)
+    dSlice3 = simulator.exponentialDist(start=2, end=6, length=8)
+    fullDay = dSlice1 + dSlice2 + dSlice3
+
+    # distribution = simulator.exponentialDist(start=2, end=random.choice([10, 11]))
+
+    distribution = fullDay
 
     W_CAR = distribution
+
     controller = Controller(COMMAND, glpk_folder_path, P_LOT, W_CAR[ct], MAX_CAPACITY)
     
     while ct < EPOCH:
