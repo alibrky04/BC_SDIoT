@@ -38,11 +38,25 @@ class Simulator:
         RemoveTime = self.SetTimeSlot() + self.GetUpTime()
         return RemoveTime
     
-    def normalDist(self, mean = 12, dev = 4, length = 24):
+    def normalDist(self, mean = 8, dev = 4, length = 24):
+        """
         x = np.arange(1, length + 1)
         normalDist = np.ceil(norm.pdf(x, mean, dev) * 100)
 
         normalDist = [int(num) for num in normalDist]
+        """
+
+        normalDist = np.round(np.abs(np.random.normal(mean, dev, size=length)))
+
+        normalDist = list(normalDist)
+
+        normalDist = [int(num) for num in normalDist]
+
+        for i in range(len(normalDist)):
+            if normalDist[i] > 11:
+                normalDist[i] = 11
+            elif normalDist[i] == 0:
+                normalDist[i] = 1
 
         print(f"Distribution: Normal Distribution\nArrangement: {normalDist}")
 
@@ -58,8 +72,12 @@ class Simulator:
         return uniformdDist
 
     def exponentialDist(self, start = 1, end = 12, length = 24):
+        """
         factor = (end / start) ** (1 / (length - 1))
         exponentialDist = [round(start * (factor ** i)) for i in range(length)]
+        """
+        
+        exponentialDist = np.round(np.abs(np.random.exponential(size=length)))
 
         print(f"Distribution: Exponential Distribution\nArrangement: {exponentialDist}")
 
@@ -304,7 +322,7 @@ class Simulator:
 
         for i in range(3):
             axs[i].legend()
-            axs[i].grid()
+            axs[i].grid(linewidth=0.25)
 
         plt.show()
 

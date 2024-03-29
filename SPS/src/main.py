@@ -8,7 +8,7 @@ simulator = Simulator()
 
 EPOCH = 24
 WAIT_TIME = 10
-MAX_SIM = 30
+MAX_SIM = 20
 MAX_DAY = 2
 P_LOT = 5
 MAX_CAPACITY = 25
@@ -21,14 +21,16 @@ sim_count = 0
 day = 1
 
 while sim_count < MAX_SIM:
-    dSlice1 = simulator.exponentialDist(start=2, end=6, length=8)
-    dSlice2 = simulator.exponentialDist(start=4, end=12, length=8)
-    dSlice3 = simulator.exponentialDist(start=2, end=6, length=8)
+    dSlice1 = simulator.normalDist(mean=4, dev=2, length=8)
+    dSlice2 = simulator.normalDist(mean=9, dev=4, length=8)
+    dSlice3 = simulator.normalDist(mean=4, dev=2, length=8)
     fullDay = dSlice1 + dSlice2 + dSlice3
 
     # distribution = simulator.exponentialDist(start=2, end=random.choice([10, 11]))
 
     distribution = fullDay
+
+    print(f'Distribution for the full day: {distribution}')
 
     W_CAR = distribution
 
