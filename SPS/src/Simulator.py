@@ -38,25 +38,25 @@ class Simulator:
         RemoveTime = self.SetTimeSlot() + self.GetUpTime()
         return RemoveTime
     
-    def normalDist(self, mean = 8, dev = 4, length = 24):
-        """
-        x = np.arange(1, length + 1)
-        normalDist = np.ceil(norm.pdf(x, mean, dev) * 100)
+    def normalDist(self, mean = 8, dev = 4, length = 24, distType = 1):
+        if distType == 1:
+            x = np.arange(1, length + 1)
+            normalDist = np.ceil(norm.pdf(x, mean, dev) * 100)
 
-        normalDist = [int(num) for num in normalDist]
-        """
+            normalDist = [int(num) for num in normalDist]
 
-        normalDist = np.round(np.abs(np.random.normal(mean, dev, size=length)))
+        elif distType == 2:
+            normalDist = np.round(np.abs(np.random.normal(mean, dev, size=length)))
 
-        normalDist = list(normalDist)
+            normalDist = list(normalDist)
 
-        normalDist = [int(num) for num in normalDist]
+            normalDist = [int(num) for num in normalDist]
 
-        for i in range(len(normalDist)):
-            if normalDist[i] > 11:
-                normalDist[i] = 11
-            elif normalDist[i] == 0:
-                normalDist[i] = 1
+            for i in range(len(normalDist)):
+                if normalDist[i] > 11:
+                    normalDist[i] = 11
+                elif normalDist[i] == 0:
+                    normalDist[i] = 1
 
         print(f"Distribution: Normal Distribution\nArrangement: {normalDist}")
 
@@ -71,13 +71,23 @@ class Simulator:
 
         return uniformdDist
 
-    def exponentialDist(self, start = 1, end = 12, length = 24):
-        """
-        factor = (end / start) ** (1 / (length - 1))
-        exponentialDist = [round(start * (factor ** i)) for i in range(length)]
-        """
-        
-        exponentialDist = np.round(np.abs(np.random.exponential(size=length)))
+    def exponentialDist(self, start = 1, end = 12, scale = 4, length = 24, distType = 1):
+        if distType == 1:
+            factor = (end / start) ** (1 / (length - 1))
+            exponentialDist = [round(start * (factor ** i)) for i in range(length)]
+
+        elif distType == 2:
+            exponentialDist = np.ceil(np.random.exponential(scale=scale, size=length))
+
+            exponentialDist = list(exponentialDist)
+
+            exponentialDist = [int(num) for num in exponentialDist]
+
+            for i in range(len(exponentialDist)):
+                if exponentialDist[i] > 11:
+                    exponentialDist[i] = 11
+                elif exponentialDist[i] == 0:
+                    exponentialDist[i] = 2
 
         print(f"Distribution: Exponential Distribution\nArrangement: {exponentialDist}")
 
@@ -268,7 +278,7 @@ class Simulator:
                         
             plt.show()
         
-    def createTransactionPlots(self, distribution):
+    def createTransactionPlots(self, distribution, distType = 1):
         epoch_size = 0
         totalSizes = {'dayTotalSize' : [],
                       'weekTotalSize' : [],
@@ -287,11 +297,11 @@ class Simulator:
         if distribution == 'normal':
             for d, dl in zip(self.simDays.values(), distLists.values()):
                 for _ in range(d):
-                    dl.append(self.normalDist(dev=random.choice( [3.75, 4] )))
+                    dl.append(self.normalDist(dev=random.choice( [3.75, 4] ), distType=distType))
         elif distribution == 'expo':
             for d, dl in zip(self.simDays.values(), distLists.values()):
                 for _ in range(d):
-                    dl.append(self.exponentialDist(start=random.choice( [1, 2, 3] ), end= random.choice( [10, 11] )))
+                    dl.append(self.exponentialDist(start=random.choice( [1, 2, 3] ), end= random.choice( [10, 11] ), distType=distType))
 
         for dist, size in zip(distLists.values(), totalSizes.values()):
             for req in dist:
@@ -301,29 +311,34 @@ class Simulator:
                 
             epoch_size = 0
 
-        fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+        # Plot for 1 Day
+        plt.figure(figsize=(6,4), dpi=150)
+        plt.scatter(self.xAxises['hours'], totalSizes['dayTotalSize'], color='blue', s=20, label=y_label)
+        plt.xticks(self.xAxisTicks['halfHours'])
+        plt.xlabel(xLabels['x1Label'])
+        plt.ylabel(y_label)
+        plt.legend()
+        plt.grid(linewidth=0.25)
+        plt.show()
 
-        axs[0].scatter(self.xAxises['hours'], totalSizes['dayTotalSize'], color='blue', s=20, label=y_label)
-        axs[0].set_xticks(self.xAxisTicks['halfHours'])
-        axs[0].set_xlabel(xLabels['x1Label'])
-        axs[0].set_ylabel(y_label)
+        # Plot for 1 Week
+        plt.figure(figsize=(6,4), dpi=150)
+        plt.scatter(self.xAxises['weeks'], totalSizes['weekTotalSize'], color='red', s=5, label=y_label)
+        plt.xticks(self.xAxisTicks['weekDays'], labels=[f'Day {i}' for i in range(1, 8)])
+        plt.xlabel(xLabels['x2Label'])
+        plt.ylabel(y_label)
+        plt.legend()
+        plt.grid(linewidth=0.25)
+        plt.show()
 
-        axs[1].scatter(self.xAxises['weeks'], totalSizes['weekTotalSize'], color='red', s=5, label=y_label)
-        axs[1].set_xticks(self.xAxisTicks['weekDays'])
-        axs[1].set_xticklabels([f'Day {i}' for i in range(1, 8)])
-        axs[1].set_xlabel(xLabels['x2Label'])
-        axs[1].set_ylabel(y_label)
-
-        axs[2].scatter(self.xAxises['months'], totalSizes['monthTotalSize'], color='green', s=5, label=y_label)
-        axs[2].set_xticks(self.xAxisTicks['monthWeeks'])
-        axs[2].set_xticklabels([f'Week {i}' for i in range(1, 5)])
-        axs[2].set_xlabel(xLabels['x3Label'])
-        axs[2].set_ylabel(y_label)
-
-        for i in range(3):
-            axs[i].legend()
-            axs[i].grid(linewidth=0.25)
-
+        # Plot for 1 Month
+        plt.figure(figsize=(6,4), dpi=150)
+        plt.scatter(self.xAxises['months'], totalSizes['monthTotalSize'], color='green', s=5, label=y_label)
+        plt.xticks(self.xAxisTicks['monthWeeks'], labels=[f'Week {i}' for i in range(1, 5)])
+        plt.xlabel(xLabels['x3Label'])
+        plt.ylabel(y_label)
+        plt.legend()
+        plt.grid(linewidth=0.25)
         plt.show()
 
     def __del__(self):

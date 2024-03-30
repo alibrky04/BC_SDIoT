@@ -21,9 +21,9 @@ sim_count = 0
 day = 1
 
 while sim_count < MAX_SIM:
-    dSlice1 = simulator.normalDist(mean=4, dev=2, length=8)
-    dSlice2 = simulator.normalDist(mean=9, dev=4, length=8)
-    dSlice3 = simulator.normalDist(mean=4, dev=2, length=8)
+    dSlice1 = simulator.exponentialDist(scale=3, length=8, distType=2)
+    dSlice2 = simulator.exponentialDist(scale=9, length=8, distType=2)
+    dSlice3 = simulator.exponentialDist(scale=3, length=8, distType=2)
     fullDay = dSlice1 + dSlice2 + dSlice3
 
     # distribution = simulator.exponentialDist(start=2, end=random.choice([10, 11]))

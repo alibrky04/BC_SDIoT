@@ -8,4 +8,4 @@ s.createAveragePlots('t_g')
 
 # s.createBarPlots('t_p_2')
 
-# s.createTransactionPlots('normal')
+# s.createTransactionPlots('expo', distType=1)
