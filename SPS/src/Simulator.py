@@ -3,7 +3,10 @@ import random
 import sys
 import numpy as np
 from scipy.stats import norm
+from scipy.interpolate import make_interp_spline
 import matplotlib.pyplot as plt
+
+plt.rcParams['grid.linewidth'] = 0.25
 
 class Simulator:
     def __init__(self, StartTime = time.time(), days = 1, weeks = 1, months = 1):
@@ -237,7 +240,7 @@ class Simulator:
                 averageErrors = [round(x / self.data_num) for x in gapError]
 
                 x_label = 'Hours'
-                y1_label = 'Gap'
+                y1_label = 'Total of Differences (ToD)'
                 y2_label = 'Cars'
 
             elif plot_type == "t_p":
@@ -255,20 +258,27 @@ class Simulator:
                 y1_label = 'People'
                 y2_label = 'Cars'
 
+            X_Y_Spline1 = make_interp_spline(x, y1)
+            X_Y_Spline2 = make_interp_spline(x, y2)
+
+            X_ = np.linspace(min(x), max(x), 481)
+            Y1_ = X_Y_Spline1(X_)
+            Y2_ = X_Y_Spline2(X_)
+
             fig, ax1 = plt.subplots(figsize=(6,4), dpi=150)
 
-            line1, = ax1.plot(x, y1, marker='o', linestyle='-', color='blue', label=y1_label)
+            line1, = ax1.plot(X_, Y1_, marker='o', markevery=(0,20), color='blue', label=y1_label)
             ax1.set_ylabel(y1_label, color='blue')
 
             ax2 = ax1.twinx()
 
-            line2, = ax2.plot(x, y2, marker='o', linestyle='-', color='red', label=y2_label)
+            line2, = ax2.plot(X_, Y2_, marker='o', markevery=(0,20), color='red', label=y2_label)
             ax2.set_ylabel(y2_label, color='red')
 
             plt.xticks(self.xAxisTicks['halfHours'])
             ax1.set_xlabel(x_label)
 
-            ax1.errorbar(x, y1, yerr=averageErrors, ecolor='black', capsize=2.5, capthick=0.5, linewidth=0.15)
+            ax1.errorbar(x, y1, yerr=averageErrors, ecolor='black', capsize=2.5, capthick=0.5, linewidth=0.15, linestyle='None')
 
             lines = [line1, line2]
             labels = [line.get_label() for line in lines]
