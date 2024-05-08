@@ -42,26 +42,42 @@ class Simulator:
         return RemoveTime
     
     def normalDist(self, mean = 8, dev = 4, length = 24, distType = 1):
-        if distType == 1:
-            x = np.arange(1, length + 1)
-            normalDist = np.ceil(norm.pdf(x, mean, dev) * 100)
+        match distType:
+            case 1: # Frequency-like
+                x = np.arange(1, length + 1)
+                normalDist = np.ceil(norm.pdf(x, mean, dev) * 100)
 
-            normalDist = [int(num) for num in normalDist]
+                normalDist = [int(num) for num in normalDist]
+            case 2: # Fixed
+                normalDist = np.round(np.abs(np.random.normal(mean, dev, size=length)))
 
-        elif distType == 2:
-            normalDist = np.round(np.abs(np.random.normal(mean, dev, size=length)))
+                normalDist = list(normalDist)
 
-            normalDist = list(normalDist)
+                normalDist = [int(num) for num in normalDist]
 
-            normalDist = [int(num) for num in normalDist]
+                for i in range(len(normalDist)):
+                    if normalDist[i] > 11:
+                        normalDist[i] = 11
+                    elif normalDist[i] == 0:
+                        normalDist[i] = 1
+            case 3: # Variable
+                normalDist = []
 
-            for i in range(len(normalDist)):
-                if normalDist[i] > 11:
-                    normalDist[i] = 11
-                elif normalDist[i] == 0:
-                    normalDist[i] = 1
+                for _ in range(length):
+                    normalDist.append(np.round(np.abs(np.random.normal(random.randrange(mean - 1, mean + 1), 
+                                                                  random.randrange(dev - 1, dev + 1)))))
 
-        print(f"Distribution: Normal Distribution\nArrangement: {normalDist}")
+                normalDist = list(normalDist)
+
+                normalDist = [int(num) for num in normalDist]
+
+                for i in range(len(normalDist)):
+                    if normalDist[i] > 11:
+                        normalDist[i] = 11
+                    elif normalDist[i] == 0:
+                        normalDist[i] = 1
+            case _:
+                normalDist = [1] * length
 
         return normalDist
     
@@ -74,27 +90,85 @@ class Simulator:
 
         return uniformdDist
 
-    def exponentialDist(self, start = 1, end = 12, scale = 4, length = 24, distType = 1):
-        if distType == 1:
-            factor = (end / start) ** (1 / (length - 1))
-            exponentialDist = [round(start * (factor ** i)) for i in range(length)]
+    def exponentialDist(self, start = 1, end = 12, scale = 6, length = 24, distType = 1):
+        match distType:
+            case 1: # Frequency-like
+                factor = (end / start) ** (1 / (length - 1))
+                exponentialDist = [round(start * (factor ** i)) for i in range(length)]
+            case 2: # Fixed
+                exponentialDist = np.ceil(np.random.exponential(scale=scale, size=length))
 
-        elif distType == 2:
-            exponentialDist = np.ceil(np.random.exponential(scale=scale, size=length))
+                exponentialDist = list(exponentialDist)
 
-            exponentialDist = list(exponentialDist)
+                exponentialDist = [int(num) for num in exponentialDist]
 
-            exponentialDist = [int(num) for num in exponentialDist]
+                for i in range(len(exponentialDist)):
+                    if exponentialDist[i] > 11:
+                        exponentialDist[i] = 11
+                    elif exponentialDist[i] == 0:
+                        exponentialDist[i] = 2
+            case 3: # Variable
+                exponentialDist = []
 
-            for i in range(len(exponentialDist)):
-                if exponentialDist[i] > 11:
-                    exponentialDist[i] = 11
-                elif exponentialDist[i] == 0:
-                    exponentialDist[i] = 2
+                for _ in range(length):
+                    exponentialDist.append(np.ceil(np.random.exponential(scale=random.randrange(scale - 2, scale + 2))))
 
-        print(f"Distribution: Exponential Distribution\nArrangement: {exponentialDist}")
+                exponentialDist = list(exponentialDist)
+
+                exponentialDist = [int(num) for num in exponentialDist]
+
+                for i in range(len(exponentialDist)):
+                    if exponentialDist[i] > 11:
+                        exponentialDist[i] = 11
+                    elif exponentialDist[i] == 0:
+                        exponentialDist[i] = 2
+            case _:
+                exponentialDist = [1] * length
 
         return exponentialDist
+    
+    def generateDistribution(self, genType = 1, distType = 1, dLength = 24):
+        match (genType, distType):
+            case (1, 1): # Discrete, fixed, normal
+                dSlice1 = self.normalDist(mean=5, dev=2, length=int(dLength/3), distType=2)
+                dSlice2 = self.normalDist(mean=8, dev=2, length=int(dLength/3), distType=2)
+                dSlice3 = self.normalDist(mean=5, dev=2, length=int(dLength/3), distType=2)
+                distribution = dSlice1 + dSlice2 + dSlice3
+            case (1, 2): # Discrete, fixed, exponential
+                dSlice1 = self.exponentialDist(scale=3, length=int(dLength/3), distType=2)
+                dSlice2 = self.exponentialDist(scale=9, length=int(dLength/3), distType=2)
+                dSlice3 = self.exponentialDist(scale=3, length=int(dLength/3), distType=2)
+                distribution = dSlice1 + dSlice2 + dSlice3
+            case (2, 1): # Discrete, variable, normal
+                dSlice1 = self.normalDist(mean=5, dev=2, length=int(dLength/3), distType=3)
+                dSlice2 = self.normalDist(mean=8, dev=2, length=int(dLength/3), distType=3)
+                dSlice3 = self.normalDist(mean=5, dev=2, length=int(dLength/3), distType=3)
+                distribution = dSlice1 + dSlice2 + dSlice3
+            case (2, 2): # Discrete, variable, exponential
+                dSlice1 = self.exponentialDist(scale=3, length=int(dLength/3), distType=3)
+                dSlice2 = self.exponentialDist(scale=9, length=int(dLength/3), distType=3)
+                dSlice3 = self.exponentialDist(scale=3, length=int(dLength/3), distType=3)
+                distribution = dSlice1 + dSlice2 + dSlice3
+            case (3, 1): # Continuous, fixed, normal
+                distribution = self.normalDist(length=dLength, distType=2)
+            case (3, 2): # Continuous, fixed, exponential
+                distribution = self.exponentialDist(length=dLength, distType=2)
+            case (4, 1): # Continuous, variable, normal
+                distribution = self.normalDist(length=dLength, distType=3)
+            case (4, 2): # Continuous, variable, exponential
+                distribution = self.exponentialDist(length=dLength, distType=3)
+            case (_, _): # Default
+                distribution = [1] * dLength
+
+        match distType:
+            case 1:
+                print(f"Distribution: Normal Distribution\nArrangement: {distribution}")
+            case 2:
+                print(f"Distribution: Exponential Distribution\nArrangement: {distribution}")
+            case _:
+                print(f"Distribution: _ Distribution\nArrangement: {distribution}")
+
+        return distribution
     
     def createStandartPlots(self, plot_type):
         gap = []

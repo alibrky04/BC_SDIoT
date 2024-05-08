@@ -21,16 +21,7 @@ sim_count = 0
 day = 1
 
 while sim_count < MAX_SIM:
-    dSlice1 = simulator.exponentialDist(scale=3, length=8, distType=2)
-    dSlice2 = simulator.exponentialDist(scale=9, length=8, distType=2)
-    dSlice3 = simulator.exponentialDist(scale=3, length=8, distType=2)
-    fullDay = dSlice1 + dSlice2 + dSlice3
-
-    # distribution = simulator.exponentialDist(start=2, end=random.choice([10, 11]))
-
-    distribution = fullDay
-
-    print(f'Distribution for the full day: {distribution}')
+    distribution = simulator.generateDistribution(genType=2, distType=1, dLength=24)
 
     W_CAR = distribution
 
