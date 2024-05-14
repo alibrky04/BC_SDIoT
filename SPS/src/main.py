@@ -1,5 +1,4 @@
 import os
-import random
 from time import sleep
 from Controller import Controller
 from Simulator import Simulator
@@ -21,7 +20,7 @@ sim_count = 0
 day = 1
 
 while sim_count < MAX_SIM:
-    distribution = simulator.generateDistribution(genType=2, distType=1, dLength=24)
+    distribution = simulator.generateDistribution(genType=4, distType=1, dLength=EPOCH)
 
     W_CAR = distribution
 

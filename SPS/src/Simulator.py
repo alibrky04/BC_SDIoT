@@ -140,9 +140,9 @@ class Simulator:
                 dSlice3 = self.exponentialDist(scale=3, length=int(dLength/3), distType=2)
                 distribution = dSlice1 + dSlice2 + dSlice3
             case (2, 1): # Discrete, variable, normal
-                dSlice1 = self.normalDist(mean=5, dev=2, length=int(dLength/3), distType=3)
-                dSlice2 = self.normalDist(mean=8, dev=2, length=int(dLength/3), distType=3)
-                dSlice3 = self.normalDist(mean=5, dev=2, length=int(dLength/3), distType=3)
+                dSlice1 = self.normalDist(mean=6, dev=2, length=int(dLength/3), distType=3)
+                dSlice2 = self.normalDist(mean=9, dev=2, length=int(dLength/3), distType=3)
+                dSlice3 = self.normalDist(mean=6, dev=2, length=int(dLength/3), distType=3)
                 distribution = dSlice1 + dSlice2 + dSlice3
             case (2, 2): # Discrete, variable, exponential
                 dSlice1 = self.exponentialDist(scale=3, length=int(dLength/3), distType=3)
