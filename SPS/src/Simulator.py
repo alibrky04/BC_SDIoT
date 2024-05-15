@@ -56,8 +56,8 @@ class Simulator:
                 normalDist = [int(num) for num in normalDist]
 
                 for i in range(len(normalDist)):
-                    if normalDist[i] > 11:
-                        normalDist[i] = 11
+                    if normalDist[i] > 10:
+                        normalDist[i] = 10
                     elif normalDist[i] == 0:
                         normalDist[i] = 1
             case 3: # Variable
@@ -72,8 +72,8 @@ class Simulator:
                 normalDist = [int(num) for num in normalDist]
 
                 for i in range(len(normalDist)):
-                    if normalDist[i] > 11:
-                        normalDist[i] = 11
+                    if normalDist[i] > 10:
+                        normalDist[i] = 10
                     elif normalDist[i] == 0:
                         normalDist[i] = 1
             case _:
@@ -103,8 +103,8 @@ class Simulator:
                 exponentialDist = [int(num) for num in exponentialDist]
 
                 for i in range(len(exponentialDist)):
-                    if exponentialDist[i] > 11:
-                        exponentialDist[i] = 11
+                    if exponentialDist[i] > 10:
+                        exponentialDist[i] = 10
                     elif exponentialDist[i] == 0:
                         exponentialDist[i] = 2
             case 3: # Variable
@@ -118,8 +118,8 @@ class Simulator:
                 exponentialDist = [int(num) for num in exponentialDist]
 
                 for i in range(len(exponentialDist)):
-                    if exponentialDist[i] > 11:
-                        exponentialDist[i] = 11
+                    if exponentialDist[i] > 10:
+                        exponentialDist[i] = 10
                     elif exponentialDist[i] == 0:
                         exponentialDist[i] = 2
             case _:

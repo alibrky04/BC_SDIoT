@@ -1,16 +1,21 @@
+# Data section
 data;
 
-set WaitingCars := car1 car2 car3 car4 car5; # Example waiting cars
-set ParkingLots := lot1 lot2 lot3; # Example parking lots
+set ParkingLots := p1 p2 p3 p4 p5;
+set WaitingCars := Car1 Car2 Car3 Car4 Car5 Car6 Car7 Car8 Car9 Car10;
 
-param maxCarCapacity :=
-  lot1 10
-  lot2 6
-  lot3 12;
+param :
+        maxCarCapacity :=
+    p1     25
+    p2     25
+    p3     25
+    p4     25
+    p5     25;
 
-param initNumOfCar :=
-  lot1 5
-  lot2 3
-  lot3 6;
-
-end;
+param :
+        initNumOfCar :=
+    p1     8
+    p2     9
+    p3     9
+    p4     9
+    p5     9;
