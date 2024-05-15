@@ -1,47 +1,45 @@
-# Define sets
-set ParkingSpaces; # Parking spaces in the parking area
-set WaitingCars; # Cars which wait to be assigned to a parking space
+# Sets
+set WaitingCars;  # Set of waiting cars
+set ParkingLots;  # Set of parking lots
 
-# Define parameters
-param numPeopleInCar {i in WaitingCars}; # Number of people in a waiting car
-param maxCarCapacity {i in ParkingSpaces}; # Maximum capacity of cars a parking space can hold
-param parked_car_num {i in ParkingSpaces}; # Number of cars that parked in a parking space !!!!! THIS SHOULD BE A VARIABLE !!!!!
-param initLoad {i in ParkingSpaces}; # Initial load of the parking spaces
+# Parameters
+param maxCarCapacity{ParkingLots};  # Maximum capacity of parking lot j
+param initNumOfCar{ParkingLots};  # Current number of cars in parking lot j
 
-# Define variables
-var isCarAssigned {i in WaitingCars, j in ParkingSpaces}, binary; # if vehicle i is assigned in parking space j
-var parkingSpaceLoad {i in ParkingSpaces}; # Number of people in a parking space
-var minLoad; # Minimum load of all of the parking spaces
+# Variables
+var x{WaitingCars, ParkingLots}, binary; # 1 if car i is assigned to parking lot j, 0 otherwise
+var numOfCar{ParkingLots} >= 0; # Number of cars in parking lot j after assignments
+var minNumOfCar >= 0; # Minimum number of cars in any parking lot after assignments
 
-# Objective function: Minimize the sum of load gap between a load and the minimum load
-minimize totalLoadGap: sum {j in ParkingSpaces} (parkingSpaceLoad[j] - minLoad + initLoad[j]);
+# Objective: Minimize the total differences of the amount of cars in each parking lot from the lowest amount of cars in any parking lot
+minimize Total_of_Differences:
+    sum{j in ParkingLots} (numOfCar[j] - minNumOfCar);
 
 # Constraints
-subject to AssignmentConstraint {i in WaitingCars}:
-    # Constraint 1: Each car is assigned to exactly one parking space
-    sum {j in ParkingSpaces} isCarAssigned[i, j] = 1;
 
-subject to CapacityConstraint {j in ParkingSpaces}:
-    # Constraint 2: Capacity constraint - Sum of people in assigned cars to a space should not exceed the maximum capacity
-    sum {i in WaitingCars} isCarAssigned[i, j] <= maxCarCapacity[j] - parked_car_num[j];
+# Every car must be assigned to exactly one parking lot
+s.t. Assign_Car{i in WaitingCars}:
+    sum{j in ParkingLots} x[i, j] = 1;
 
-subject to minLoadConstraint {j in ParkingSpaces}:
-    # Constraint 3: Defines the minLoad
-    sum {i in WaitingCars} (numPeopleInCar[i] * isCarAssigned[i, j]) + initLoad[j] >= minLoad;
+# The number of cars assigned to each parking lot must not exceed its capacity
+s.t. Capacity{j in ParkingLots}:
+    initNumOfCar[j] + sum{i in WaitingCars} x[i, j] <= maxCarCapacity[j];
 
-subject to loadConstraint1 {j in ParkingSpaces}:
-    parkingSpaceLoad[j] >= sum {i in WaitingCars} (isCarAssigned[i, j] * numPeopleInCar[i]) + initLoad[j];
+# Define y[j] as the total number of cars in parking lot j after assignments
+s.t. Define_y{j in ParkingLots}:
+    numOfCar[j] = initNumOfCar[j] + sum{i in WaitingCars} x[i, j];
 
-subject to loadConstraint2 {j in ParkingSpaces}:
-    parkingSpaceLoad[j] <= sum {i in WaitingCars} (isCarAssigned[i, j] * numPeopleInCar[i]) + initLoad[j];
+# Ensure z is the minimum number of cars in any parking lot after assignments
+s.t. Min_z{j in ParkingLots}:
+    minNumOfCar <= numOfCar[j];
 
-# Solve the optimization problem
+# Solve the problem
 solve;
 
-# Display the results
-display isCarAssigned;
-display totalLoadGap;
-display minLoad;
-display parkingSpaceLoad;
+# Display results
+display x; 
+display numOfCar;
+display minNumOfCar;
+display Total_of_Differences;
 
 end;

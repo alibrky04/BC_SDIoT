@@ -11,7 +11,8 @@ MAX_SIM = 20
 MAX_DAY = 2
 P_LOT = 5
 MAX_CAPACITY = 25
-COMMAND = "glpsol --model SPS.mod --data SPS.dat --display SPS.out"
+COMMAND1 = "glpsol --model SPS.mod --data SPS.dat --display SPS.out"
+COMMAND2 = "glpsol --model SPS_CAR.mod --data SPS_CAR.dat --display SPS.out"
 glpk_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'GLPK'))
 
 ct = 0
@@ -24,13 +25,13 @@ while sim_count < MAX_SIM:
 
     W_CAR = distribution
 
-    controller = Controller(COMMAND, glpk_folder_path, P_LOT, W_CAR[ct], MAX_CAPACITY)
+    controller = Controller(COMMAND1, glpk_folder_path, P_LOT, W_CAR[ct], MAX_CAPACITY)
     
     while ct < EPOCH:
         print('***********************************************\n')
 
         controller.createCars(doChange=True, new_car_num=W_CAR[ct])
-        controller.writeData()
+        controller.writeData('SPS/GLPK/SPS.dat')
         controller.runSolver()
         controller.updateState()
         controller.showData()

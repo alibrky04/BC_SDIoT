@@ -86,10 +86,57 @@ data;
         data = data_start + data_parking_space + data_waiting_cars + data_init_load + data_max + data_parked_car + data_num_people
         
         return data
+    
+    def createDataForCarModel(self):
+        data_start = """# Data section
+data;
 
-    def writeData(self):
-        data = self.createData()
-        with open('SPS/GLPK/SPS.dat', 'w') as file:
+"""
+
+        data_parking_space = "set ParkingLots :="
+
+        for i in range(self.P_LOT):
+            data_parking_space += f" p{i + 1}"
+        
+        data_parking_space += ";\n"
+
+        data_waiting_cars = "set WaitingCars :="""
+        
+        for i in range(self.W_CAR):
+            data_waiting_cars += f" Car{i + 1}"
+
+        data_waiting_cars += ";\n\n"
+
+        data_init_load = """param :
+        initNumOfCar :="""
+
+        for space in self.parking_spaces:
+            data_init_load += f"\n    {space}     {self.MAX_CAPACITY}"
+
+        data_init_load += ";\n\n"
+
+        data_parked_car = """param :
+        initNumOfCar :="""
+
+        for space in self.parking_spaces:
+            data_parked_car += f"\n    {space}     {self.number_of_cars[space]}"
+
+        data_parked_car += ";\n\n"
+
+        data = data_start + data_parking_space + data_waiting_cars + data_init_load + data_parked_car
+        
+        return data
+
+    def writeData(self, path, model = 1):
+        match model:
+            case 1:
+                data = self.createData()
+            case 2:
+                data = self.createDataForCarModel()
+            case _:
+                data = ""
+        
+        with open(path, 'w') as file:
             file.write(data)
         
     def runSolver(self, doPrint = False):

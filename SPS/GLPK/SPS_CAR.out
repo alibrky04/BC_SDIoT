@@ -1,0 +1,24 @@
+Display statement at line 40
+x[car1,lot1].val = 0
+x[car1,lot2].val = 1
+x[car1,lot3].val = 0
+x[car2,lot1].val = 0
+x[car2,lot2].val = 1
+x[car2,lot3].val = 0
+x[car3,lot1].val = 0
+x[car3,lot2].val = 1
+x[car3,lot3].val = 0
+x[car4,lot1].val = 1
+x[car4,lot2].val = 0
+x[car4,lot3].val = 0
+x[car5,lot1].val = 0
+x[car5,lot2].val = 0
+x[car5,lot3].val = 1
+Display statement at line 41
+numOfCar[lot1].val = 6
+numOfCar[lot2].val = 6
+numOfCar[lot3].val = 7
+Display statement at line 42
+minNumOfCar.val = 6
+Display statement at line 43
+Total_of_Differences.val = 1

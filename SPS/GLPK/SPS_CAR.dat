@@ -1,0 +1,16 @@
+data;
+
+set WaitingCars := car1 car2 car3 car4 car5; # Example waiting cars
+set ParkingLots := lot1 lot2 lot3; # Example parking lots
+
+param maxCarCapacity :=
+  lot1 10
+  lot2 6
+  lot3 12;
+
+param initNumOfCar :=
+  lot1 5
+  lot2 3
+  lot3 6;
+
+end;
