@@ -7,7 +7,7 @@ simulator = Simulator()
 
 EPOCH = 24
 WAIT_TIME = 10
-MAX_SIM = 30
+MAX_SIM = 20
 MAX_DAY = 2
 P_LOT = 5
 MAX_CAPACITY = 25

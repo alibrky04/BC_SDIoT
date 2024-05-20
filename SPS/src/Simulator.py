@@ -56,8 +56,8 @@ class Simulator:
                 normalDist = [int(num) for num in normalDist]
 
                 for i in range(len(normalDist)):
-                    if normalDist[i] > 10:
-                        normalDist[i] = 10
+                    if normalDist[i] > 9:
+                        normalDist[i] = 9
                     elif normalDist[i] == 0:
                         normalDist[i] = 1
             case 3: # Variable
@@ -72,8 +72,8 @@ class Simulator:
                 normalDist = [int(num) for num in normalDist]
 
                 for i in range(len(normalDist)):
-                    if normalDist[i] > 10:
-                        normalDist[i] = 10
+                    if normalDist[i] > 9:
+                        normalDist[i] = 9
                     elif normalDist[i] == 0:
                         normalDist[i] = 1
             case _:
@@ -103,8 +103,8 @@ class Simulator:
                 exponentialDist = [int(num) for num in exponentialDist]
 
                 for i in range(len(exponentialDist)):
-                    if exponentialDist[i] > 10:
-                        exponentialDist[i] = 10
+                    if exponentialDist[i] > 9:
+                        exponentialDist[i] = 9
                     elif exponentialDist[i] == 0:
                         exponentialDist[i] = 2
             case 3: # Variable
@@ -118,8 +118,8 @@ class Simulator:
                 exponentialDist = [int(num) for num in exponentialDist]
 
                 for i in range(len(exponentialDist)):
-                    if exponentialDist[i] > 10:
-                        exponentialDist[i] = 10
+                    if exponentialDist[i] > 9:
+                        exponentialDist[i] = 9
                     elif exponentialDist[i] == 0:
                         exponentialDist[i] = 2
             case _:
@@ -395,32 +395,20 @@ class Simulator:
                 
             epoch_size = 0
 
-        # Plot for 1 Day
         plt.figure(figsize=(6,4), dpi=150)
-        plt.scatter(self.xAxises['hours'], totalSizes['dayTotalSize'], color='blue', s=20, label=y_label)
-        plt.xticks(self.xAxisTicks['halfHours'])
-        plt.xlabel(xLabels['x1Label'])
-        plt.ylabel(y_label)
-        plt.legend()
-        plt.grid(linewidth=0.25)
-        plt.show()
-
-        # Plot for 1 Week
-        plt.figure(figsize=(6,4), dpi=150)
-        plt.scatter(self.xAxises['weeks'], totalSizes['weekTotalSize'], color='red', s=5, label=y_label)
-        plt.xticks(self.xAxisTicks['weekDays'], labels=[f'Day {i}' for i in range(1, 8)])
-        plt.xlabel(xLabels['x2Label'])
-        plt.ylabel(y_label)
-        plt.legend()
-        plt.grid(linewidth=0.25)
-        plt.show()
 
         # Plot for 1 Month
-        plt.figure(figsize=(6,4), dpi=150)
-        plt.scatter(self.xAxises['months'], totalSizes['monthTotalSize'], color='green', s=5, label=y_label)
-        plt.xticks(self.xAxisTicks['monthWeeks'], labels=[f'Week {i}' for i in range(1, 5)])
-        plt.xlabel(xLabels['x3Label'])
+        plt.scatter(self.xAxises['months'], totalSizes['monthTotalSize'], color='green', s=5, label=xLabels['x3Label'])
+
+        # Plot for 1 Week
+        plt.scatter(self.xAxises['weeks'], totalSizes['weekTotalSize'], color='red', s=5, label=xLabels['x2Label'])
+
+        # Plot for 1 Day
+        plt.scatter(self.xAxises['hours'], totalSizes['dayTotalSize'], color='blue', s=5, label=xLabels['x1Label'])
+
+        plt.xlabel('Time (Hours)')
         plt.ylabel(y_label)
+
         plt.legend()
         plt.grid(linewidth=0.25)
         plt.show()
