@@ -1,36 +1,41 @@
 Display statement at line 40
 isCarAssigned[Car1,p1].val = 0
 isCarAssigned[Car1,p2].val = 0
-isCarAssigned[Car1,p3].val = 0
-isCarAssigned[Car1,p4].val = 1
+isCarAssigned[Car1,p3].val = 1
+isCarAssigned[Car1,p4].val = 0
 isCarAssigned[Car1,p5].val = 0
 isCarAssigned[Car2,p1].val = 0
 isCarAssigned[Car2,p2].val = 0
 isCarAssigned[Car2,p3].val = 0
-isCarAssigned[Car2,p4].val = 1
-isCarAssigned[Car2,p5].val = 0
+isCarAssigned[Car2,p4].val = 0
+isCarAssigned[Car2,p5].val = 1
 isCarAssigned[Car3,p1].val = 0
 isCarAssigned[Car3,p2].val = 1
 isCarAssigned[Car3,p3].val = 0
 isCarAssigned[Car3,p4].val = 0
 isCarAssigned[Car3,p5].val = 0
-isCarAssigned[Car4,p1].val = 0
+isCarAssigned[Car4,p1].val = 1
 isCarAssigned[Car4,p2].val = 0
-isCarAssigned[Car4,p3].val = 1
+isCarAssigned[Car4,p3].val = 0
 isCarAssigned[Car4,p4].val = 0
 isCarAssigned[Car4,p5].val = 0
 isCarAssigned[Car5,p1].val = 0
 isCarAssigned[Car5,p2].val = 0
-isCarAssigned[Car5,p3].val = 0
+isCarAssigned[Car5,p3].val = 1
 isCarAssigned[Car5,p4].val = 0
-isCarAssigned[Car5,p5].val = 1
+isCarAssigned[Car5,p5].val = 0
+isCarAssigned[Car6,p1].val = 0
+isCarAssigned[Car6,p2].val = 0
+isCarAssigned[Car6,p3].val = 0
+isCarAssigned[Car6,p4].val = 1
+isCarAssigned[Car6,p5].val = 0
 Display statement at line 41
-numOfCar[p1].val = 13
-numOfCar[p2].val = 13
-numOfCar[p3].val = 13
-numOfCar[p4].val = 13
-numOfCar[p5].val = 13
+numOfCar[p1].val = 5
+numOfCar[p2].val = 5
+numOfCar[p3].val = 6
+numOfCar[p4].val = 6
+numOfCar[p5].val = 5
 Display statement at line 42
-minNumOfCar.val = 13
+minNumOfCar.val = 5
 Display statement at line 43
-Total_of_Differences.val = 0
+Total_of_Differences.val = 2

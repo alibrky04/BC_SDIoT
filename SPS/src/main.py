@@ -22,7 +22,7 @@ sim_count = 0
 day = 1
 
 while sim_count < MAX_SIM:
-    distribution = simulator.generateDistribution(mean=2, genType=3, distType=1, dLength=EPOCH)
+    distribution = simulator.generateDistribution(dMean=6, dDev=2, genType=3, distType=1, dLength=EPOCH)
 
     W_CAR = distribution
 

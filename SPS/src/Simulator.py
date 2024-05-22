@@ -127,7 +127,7 @@ class Simulator:
 
         return exponentialDist
     
-    def generateDistribution(self, genType = 1, distType = 1, dLength = 24, mean = 8, dev = 4, scale = 6):
+    def generateDistribution(self, genType = 1, distType = 1, dLength = 24, dMean = 8, dDev = 4, dScale = 6):
         match (genType, distType):
             case (1, 1): # Discrete, fixed, normal
                 dSlice1 = self.normalDist(mean=5, dev=2, length=int(dLength/3), distType=2)
@@ -150,13 +150,13 @@ class Simulator:
                 dSlice3 = self.exponentialDist(scale=3, length=int(dLength/3), distType=3)
                 distribution = dSlice1 + dSlice2 + dSlice3
             case (3, 1): # Continuous, fixed, normal
-                distribution = self.normalDist(mean=mean, mean=dev, length=dLength, distType=2)
+                distribution = self.normalDist(mean=dMean, dev=dDev, length=dLength, distType=2)
             case (3, 2): # Continuous, fixed, exponential
-                distribution = self.exponentialDist(scale=scale, length=dLength, distType=2)
+                distribution = self.exponentialDist(scale=dScale, length=dLength, distType=2)
             case (4, 1): # Continuous, variable, normal
-                distribution = self.normalDist(mean=mean, mean=dev, length=dLength, distType=3)
+                distribution = self.normalDist(mean=dMean, dev=dDev, length=dLength, distType=3)
             case (4, 2): # Continuous, variable, exponential
-                distribution = self.exponentialDist(scale=scale, length=dLength, distType=3)
+                distribution = self.exponentialDist(scale=dScale, length=dLength, distType=3)
             case (_, _): # Default
                 distribution = [1] * dLength
 
