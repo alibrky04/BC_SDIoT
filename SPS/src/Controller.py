@@ -319,7 +319,7 @@ data;
                     self.showParkingLots()
                     print()
         
-    def storeData(self, data_type, start_hour = 0):
+    def storeData(self, data_type, start_hour = 0, sim_count = 0):
         with open('SPS/Datas/SimData.txt', 'a') as file:
             if data_type == 1:
                 file.write('fig1\n')
@@ -344,7 +344,11 @@ data;
             for total_people in self.epoch_people_num[start_hour:]:
                 file.write(str(total_people) + ' ')
 
-            file.write('\n\n--------------------\n\n')
+            if sim_count < 20:
+                file.write('\n\n--------------------\n\n')
+            else:
+                file.write('\n\nEND\n\n')
+            
 
     def __del__(self):
         pass
