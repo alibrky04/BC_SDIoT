@@ -361,6 +361,41 @@ class Simulator:
             ax1.grid(linewidth=0.25)
                         
             plt.show()
+    
+    def createMuPlots(self):
+        with open('SPS/Datas/SimData.txt', 'r') as file:
+            data = file.read()
+        
+        phases = data.strip().split('END\n')
+        averages = []
+        
+        for phase in phases:
+            lines = phase.strip().split('\n')
+            for line in lines:
+                if line.startswith('g:'):
+                    g_values = list(map(int, line.split()[1:]))
+                    average_g = sum(g_values) / len(g_values)
+                    averages.append(average_g)
+                    break
+
+        X = range(2, 2 + len(averages))
+
+        X_Y_Spline1 = make_interp_spline(X, averages)
+
+        X_ = np.linspace(min(X), max(X), 751)
+        Y_ = X_Y_Spline1(X_)
+
+        num_markers = 15
+        markevery = int(len(X_) / (num_markers - 1))
+        
+        plt.figure(figsize=(6,4), dpi=150)
+        plt.plot(X_, Y_, marker='o', markevery=markevery,label='Average ToD')
+        plt.xlabel('µ')
+        plt.xticks(range(2, 2 + len(averages)))
+        plt.ylabel('Average ToD')
+        plt.grid(linewidth=0.25)
+        plt.legend()
+        plt.show()
         
     def createTransactionPlots(self, distribution, distType = 1):
         epoch_size = 0
