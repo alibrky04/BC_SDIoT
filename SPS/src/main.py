@@ -20,11 +20,12 @@ ct = 0
 counter = 0
 sim_count = 0
 day = 1
-deviation = 7
+deviation = 1
+mean = 2
 
-while True:
+while mean <= 16:
     while sim_count < MAX_SIM:
-        distribution = simulator.generateDistribution(dMean=6, dDev=deviation, genType=3, distType=1, dLength=EPOCH)
+        distribution = simulator.generateDistribution(dMean=mean, dDev=deviation, genType=3, distType=1, dLength=EPOCH)
 
         W_CAR = distribution
 
@@ -68,7 +69,8 @@ while True:
         sim_count += 1
     
     with open('SPS/Datas/SimData.txt', 'a') as file:
-        file.write(f'Deviation: {deviation}\nEND\n\n')
+        file.write(f'Mean: {mean}\nEND\n\n')
 
-    deviation += 1
+    mean += 1
+    deviation = mean/2
     sim_count = 0

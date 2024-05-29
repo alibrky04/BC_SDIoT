@@ -362,7 +362,12 @@ class Simulator:
                         
             plt.show()
     
-    def createMuPlots(self):
+    def createNormalDistPlots(self, dataType):
+        if dataType == 'mu':
+            xLabel = 'σ'
+        elif dataType == 'mean':
+            xLabel = 'μ'
+
         with open('SPS/Datas/SimData.txt', 'r') as file:
             data = file.read()
         
@@ -390,7 +395,7 @@ class Simulator:
         
         plt.figure(figsize=(6,4), dpi=150)
         plt.plot(X_, Y_, marker='o', markevery=markevery,label='Average ToD')
-        plt.xlabel('µ')
+        plt.xlabel(xLabel)
         plt.xticks(range(2, 2 + len(averages)))
         plt.ylabel('Average ToD')
         plt.grid(linewidth=0.25)
