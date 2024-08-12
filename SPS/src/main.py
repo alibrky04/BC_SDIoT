@@ -12,7 +12,7 @@ MAX_DAY = 2
 P_LOT = 5
 MAX_CAPACITY = 25
 MAP_SIZE = 50
-SIM_TYPE = 1
+SIM_TYPE = 3
 
 if SIM_TYPE == 1:
     COMMAND = 'glpsol --model SPS.mod --data SPS.dat --display SPS.out'
@@ -20,6 +20,9 @@ if SIM_TYPE == 1:
 elif SIM_TYPE == 2:
     COMMAND = 'glpsol --model SPS_CAR.mod --data SPS_CAR.dat --display SPS_CAR.out'
     DATAFILE = 'SPS/GLPK/SPS_CAR.dat'
+elif SIM_TYPE == 3:
+    COMMAND = ''
+    DATAFILE = ''
 
 glpk_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'GLPK'))
 
@@ -42,8 +45,11 @@ while mean <= 16:
             print('***********************************************\n')
 
             controller.createCars(doChange=True, new_car_num=W_CAR[ct])
-            controller.writeData(DATAFILE, model=SIM_TYPE)
-            controller.runSolver()
+
+            if SIM_TYPE == 1 or SIM_TYPE == 2:
+                controller.writeData(DATAFILE, model=SIM_TYPE)
+                controller.runSolver()
+
             controller.updateState(model=SIM_TYPE)
             controller.showData()
 

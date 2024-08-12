@@ -1,6 +1,7 @@
 import random
 import subprocess
 import re
+import math as m
 from Simulator import Simulator
 
 class Controller:
@@ -20,15 +21,13 @@ class Controller:
                                 random.randint(0, self.MAP_SIZE)] 
                                for i in range(self.P_LOT)}
         
-        print(self.parking_spaces)
-
         self.parking_spaces_loads = {f'p{i + 1}' : 0 for i in range(self.P_LOT)}
         self.number_of_cars = {f'p{i + 1}' : 0 for i in range(self.P_LOT)}
         self.waiting_cars = {f'Car{i + 1}': [0, 0, random.randint(0, self.MAP_SIZE), 
                                             random.randint(0, self.MAP_SIZE)] 
                                             for i in range(self.W_CAR)} # [num_of_people, res_time, x, y]
 
-        self.totalOfDifferences = []
+        self.total_of_differences = []
         self.epoch_car_num = []
         self.epoch_people_num = []
     
@@ -165,17 +164,17 @@ data;
                 
                 car_assignments = {}
                 parking_space_loads = {}
-                totalOfDifferences = 0
+                total_of_differences = 0
 
                 car_assignments_pattern = re.compile(r'isCarAssigned\[(\w+),(\w+)\].val = (\d+)')
                 parking_space_load_pattern = re.compile(r'parkingSpaceLoad\[(\w+)\].val = (\d+)')
-                load_totalOfDifferences_pattern = re.compile(r'totalLoadGap.val = (\d+)')
+                load_total_of_differences_pattern = re.compile(r'totalLoadGap.val = (\d+)')
 
                 for line in solver_output.split('\n'):
                     if line.strip():
                         car_match = car_assignments_pattern.match(line)
                         load_match = parking_space_load_pattern.match(line)
-                        totalOfDifferences_match = load_totalOfDifferences_pattern.match(line)
+                        total_of_differences_match = load_total_of_differences_pattern.match(line)
                         if car_match:
                             car = car_match.group(1)
                             parking_space = car_match.group(2)
@@ -190,8 +189,8 @@ data;
                             load_value = int(load_match.group(2))
 
                             parking_space_loads[parking_space] = load_value
-                        elif totalOfDifferences_match:
-                            totalOfDifferences = int(totalOfDifferences_match.group(1))
+                        elif total_of_differences_match:
+                            total_of_differences = int(total_of_differences_match.group(1))
 
                 assigned_parking_spaces = {}
 
@@ -199,7 +198,7 @@ data;
                     assigned_space = next((space for space, value in spaces.items() if value == 1), None)
                     assigned_parking_spaces[car] = assigned_space
 
-                return assigned_parking_spaces, parking_space_loads, totalOfDifferences
+                return assigned_parking_spaces, parking_space_loads, total_of_differences
         except FileNotFoundError:
             print(f'The file "{self.glpk_folder_path}" does not exist.')
             return None
@@ -211,17 +210,17 @@ data;
                 
                 car_assignments = {}
                 num_of_cars = {}
-                Total_of_Differences = 0
+                total_of_differences = 0
 
                 car_assignments_pattern = re.compile(r'isCarAssigned\[(\w+),(\w+)\].val = (\d+)')
                 num_of_cars_pattern = re.compile(r'numOfCar\[(\w+)\].val = (\d+)')
-                Total_of_Differences_pattern = re.compile(r'Total_of_Differences.val = (\d+)')
+                total_of_differences_pattern = re.compile(r'total_of_differences.val = (\d+)')
 
                 for line in solver_output.split('\n'):
                     if line.strip():
                         car_match = car_assignments_pattern.match(line)
                         num_match = num_of_cars_pattern.match(line)
-                        dif_match = Total_of_Differences_pattern.match(line)
+                        dif_match = total_of_differences_pattern.match(line)
                         if car_match:
                             car = car_match.group(1)
                             parking_space = car_match.group(2)
@@ -237,7 +236,7 @@ data;
 
                             num_of_cars[parking_space] = num_of_cars_value
                         elif dif_match:
-                            Total_of_Differences = int(dif_match.group(1))
+                            total_of_differences = int(dif_match.group(1))
 
                 assigned_parking_spaces = {}
 
@@ -245,19 +244,50 @@ data;
                     assigned_space = next((space for space, value in spaces.items() if value == 1), None)
                     assigned_parking_spaces[car] = assigned_space
 
-                return assigned_parking_spaces, num_of_cars, Total_of_Differences
+                return assigned_parking_spaces, num_of_cars, total_of_differences
         except FileNotFoundError:
             print(f'The file "{self.glpk_folder_path}" does not exist.')
             return None
+    
+    def takeOutputForNearModel(self):
+        assigned_parking_spaces = {}
+        parking_space_loads = {}
+        total_of_differences = 0
+
+        for car in self.waiting_cars:
+            nearest_parking_lot = self.findNearestParkingLot(car)
+            assigned_parking_spaces[car] = nearest_parking_lot
+
+        for car, ps in assigned_parking_spaces.items():
+            if ps in parking_space_loads:
+                parking_space_loads[ps] += self.waiting_cars[car][0]
+            else:
+                parking_space_loads[ps] = self.parking_spaces_loads[ps] + self.waiting_cars[car][0]
+
+        new_parkin_space_loads = self.parking_spaces_loads.copy()
+
+        for ps, load in parking_space_loads.items():
+            new_parkin_space_loads[ps] += load
+
+        min_load = 1000
+        for ps, load in parking_space_loads.items():
+            min_load = min(load, min_load)
+
+        for ps, load in parking_space_loads.items():
+            total_of_differences += load - min_load
+
+        return assigned_parking_spaces, parking_space_loads, total_of_differences
         
     def updateState(self, model = 1):
         match model:
             case 1:
-                assigned_parking_spaces, parking_space_loads, totalOfDifferences = self.takeOutput()
+                assigned_parking_spaces, parking_space_loads, total_of_differences = self.takeOutput()
             case 2:
-                assigned_parking_spaces, parking_space_loads, totalOfDifferences = self.takeOutputForCarModel()
+                assigned_parking_spaces, parking_space_loads, total_of_differences = self.takeOutputForCarModel()
+            case 3:
+                assigned_parking_spaces, parking_space_loads, total_of_differences = self.takeOutputForNearModel()
             case _:
-                assigned_parking_spaces, parking_space_loads, totalOfDifferences = {}, {}, 0
+                assigned_parking_spaces, parking_space_loads, total_of_differences = {}, {}, 0
 
         print()
         
@@ -295,8 +325,8 @@ data;
         # Store the total number of people of this epoch
         self.epoch_people_num.append(total_people)
 
-        # Store the totalOfDifferences of this epoch
-        self.totalOfDifferences.append(totalOfDifferences)
+        # Store the total_of_differences of this epoch
+        self.total_of_differences.append(total_of_differences)
     
     def showParkingLots(self):
         for p, pl in self.parking_spaces.items():
@@ -314,7 +344,7 @@ data;
         
         print()
 
-        print(f'Current total of differences is {self.totalOfDifferences[-1]}\n')
+        print(f'Current total of differences is {self.total_of_differences[-1]}\n')
 
         print('***********************************************\n')
 
@@ -341,7 +371,7 @@ data;
                 file.write('fig3\n')
 
             file.write('g: ')
-            for g in self.totalOfDifferences[start_hour:]:
+            for g in self.total_of_differences[start_hour:]:
                 file.write(str(g) + ' ')
             
             file.write("\n")
@@ -360,7 +390,20 @@ data;
                 file.write('\n\n--------------------\n\n')
             else:
                 file.write('\n\nEND\n\n')
+    
+    def findNearestParkingLot(self, car):
+        min_length = 100000
+        nearest_parking_lot = ''
+        for p, data in self.parking_spaces.items():
+            print(f'{p} x = {data[1]}, {p} y = {data[2]}')
+            print(f'{car} x = {self.waiting_cars[car][2]}, {car} y = {self.waiting_cars[car][3]}')
+            length = m.sqrt((data[1] - self.waiting_cars[car][2])**2 +
+                            (data[2] - self.waiting_cars[car][3])**2)
             
+            if length < min_length:
+                min_length = length
+                nearest_parking_lot = p
 
+        return nearest_parking_lot
     def __del__(self):
         pass
