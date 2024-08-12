@@ -4,20 +4,30 @@ import re
 from Simulator import Simulator
 
 class Controller:
-    def __init__(self, COMMAND, glpk_folder_path, P_LOT = 5, W_CAR = 5, MAX_CAPACITY = 10):
+    def __init__(self, COMMAND, glpk_folder_path, P_LOT = 5, W_CAR = 5, MAX_CAPACITY = 10, MAP_SIZE = 50):
         self.simulator = Simulator()
 
         self.P_LOT = P_LOT
         self.W_CAR = W_CAR
         self.MAX_CAPACITY = MAX_CAPACITY
+        self.MAP_SIZE = MAP_SIZE
         self.COMMAND = COMMAND
         self.glpk_folder_path = glpk_folder_path
 
-        # parking_spaces = [park state, car_load, res time]
-        self.parking_spaces = {f'p{i + 1}' : [[0, 0, 0] for _ in range(self.MAX_CAPACITY)] for i in range(self.P_LOT)}
+        # parking_spaces = [[park state, car_load, res time], x, y]
+        self.parking_spaces = {f'p{i + 1}' : 
+                               [[[0, 0, 0] for _ in range(self.MAX_CAPACITY)], random.randint(0, self.MAP_SIZE), 
+                                random.randint(0, self.MAP_SIZE)] 
+                               for i in range(self.P_LOT)}
+        
+        print(self.parking_spaces)
+
         self.parking_spaces_loads = {f'p{i + 1}' : 0 for i in range(self.P_LOT)}
         self.number_of_cars = {f'p{i + 1}' : 0 for i in range(self.P_LOT)}
-        self.waiting_cars = {f'Car{i + 1}': [0, 0] for i in range(self.W_CAR)} # [num_of_people, res_time]
+        self.waiting_cars = {f'Car{i + 1}': [0, 0, random.randint(0, self.MAP_SIZE), 
+                                            random.randint(0, self.MAP_SIZE)] 
+                                            for i in range(self.W_CAR)} # [num_of_people, res_time, x, y]
+
         self.totalOfDifferences = []
         self.epoch_car_num = []
         self.epoch_people_num = []
@@ -26,7 +36,9 @@ class Controller:
         if doChange:
             self.W_CAR = new_car_num
 
-        self.waiting_cars = {f'Car{i + 1}': [random.randint(1, 5), 0] for i in range(self.W_CAR)}
+        self.waiting_cars = {f'Car{i + 1}': [random.randint(1, 5), 0, random.randint(0, self.MAP_SIZE),
+                                            random.randint(0, self.MAP_SIZE)] for i in range(self.W_CAR)}
+
         print('The cars in the queuing area')
         for i in range(self.W_CAR):
             print(f'Number of people in car {i + 1} is', self.waiting_cars[f'Car{i + 1}'][0])
@@ -255,9 +267,9 @@ data;
 
         # Append the cars to the parking lots
         for car, parking_space in assigned_parking_spaces.items():
-            for i, lot in enumerate(self.parking_spaces[parking_space]):
+            for i, lot in enumerate(self.parking_spaces[parking_space][0]):
                 if lot[0] == 0:
-                    self.parking_spaces[parking_space][i] = [1, self.waiting_cars[car][0], self.waiting_cars[car][1]]
+                    self.parking_spaces[parking_space][0][i] = [1, self.waiting_cars[car][0], self.waiting_cars[car][1]]
                     print(f'{car} has been assigned to {parking_space}')
                     break
 
@@ -287,8 +299,8 @@ data;
         self.totalOfDifferences.append(totalOfDifferences)
     
     def showParkingLots(self):
-        for p, l in self.parking_spaces.items():
-            print(f'{p} :', ''.join('|#|  ' if space[0] == 1 else '| |  ' for space in l), f'({self.number_of_cars[p]})')
+        for p, pl in self.parking_spaces.items():
+            print(f'{p} :', ''.join('|#|  ' if space[0] == 1 else '| |  ' for space in pl[0]), f'({self.number_of_cars[p]})')
 
     def showData(self):
         print()
@@ -307,8 +319,8 @@ data;
         print('***********************************************\n')
 
     def removeCars(self):
-        for space, lots in self.parking_spaces.items():
-            for i, car in enumerate(lots):
+        for space, p_lots in self.parking_spaces.items():
+            for i, car in enumerate(p_lots[0]):
                 if car[2] <= self.simulator.GetUpTime() and car[0] != 0:
                     print(f'A car in the {space} and {i + 1}. lot has left')
 

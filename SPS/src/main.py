@@ -11,9 +11,16 @@ MAX_SIM = 20
 MAX_DAY = 2
 P_LOT = 5
 MAX_CAPACITY = 25
-COMMAND1 = "glpsol --model SPS.mod --data SPS.dat --display SPS.out"
-COMMAND2 = "glpsol --model SPS_CAR.mod --data SPS_CAR.dat --display SPS_CAR.out"
-DATAFILE = 'SPS/GLPK/SPS_CAR.dat'
+MAP_SIZE = 50
+SIM_TYPE = 1
+
+if SIM_TYPE == 1:
+    COMMAND = 'glpsol --model SPS.mod --data SPS.dat --display SPS.out'
+    DATAFILE = 'SPS/GLPK/SPS.dat'
+elif SIM_TYPE == 2:
+    COMMAND = 'glpsol --model SPS_CAR.mod --data SPS_CAR.dat --display SPS_CAR.out'
+    DATAFILE = 'SPS/GLPK/SPS_CAR.dat'
+
 glpk_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'GLPK'))
 
 ct = 0
@@ -29,15 +36,15 @@ while mean <= 16:
 
         W_CAR = distribution
 
-        controller = Controller(COMMAND2, glpk_folder_path, P_LOT, W_CAR[ct], MAX_CAPACITY)
+        controller = Controller(COMMAND, glpk_folder_path, P_LOT, W_CAR[ct], MAX_CAPACITY, MAP_SIZE)
         
         while ct < EPOCH:
             print('***********************************************\n')
 
             controller.createCars(doChange=True, new_car_num=W_CAR[ct])
-            controller.writeData(DATAFILE, model=2)
+            controller.writeData(DATAFILE, model=SIM_TYPE)
             controller.runSolver()
-            controller.updateState(model=2)
+            controller.updateState(model=SIM_TYPE)
             controller.showData()
 
             while counter < WAIT_TIME:
