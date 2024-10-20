@@ -395,8 +395,8 @@ data;
         min_length = 100000
         nearest_parking_lot = ''
         for p, data in self.parking_spaces.items():
-            print(f'{p} x = {data[1]}, {p} y = {data[2]}')
-            print(f'{car} x = {self.waiting_cars[car][2]}, {car} y = {self.waiting_cars[car][3]}')
+            """print(f'{p} x = {data[1]}, {p} y = {data[2]}')
+            print(f'{car} x = {self.waiting_cars[car][2]}, {car} y = {self.waiting_cars[car][3]}')"""
             length = m.sqrt((data[1] - self.waiting_cars[car][2])**2 +
                             (data[2] - self.waiting_cars[car][3])**2)
             

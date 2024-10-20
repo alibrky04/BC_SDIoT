@@ -2,15 +2,15 @@
 data;
 
 set ParkingSpaces := p1 p2 p3 p4 p5;
-set WaitingCars := Car1;
+set WaitingCars := Car1 Car2;
 
 param :
         initLoad :=
-    p1     6
-    p2     6
-    p3     5
-    p4     7
-    p5     8;
+    p1     0
+    p2     3
+    p3     1
+    p4     0
+    p5     3;
 
 param :
         maxCarCapacity :=
@@ -22,12 +22,13 @@ param :
 
 param :
         parked_car_num :=
-    p1     2
-    p2     2
+    p1     0
+    p2     1
     p3     1
-    p4     2
-    p5     3;
+    p4     0
+    p5     1;
 
 param :
         numPeopleInCar :=
-    Car1     5;
+    Car1     4
+    Car2     4;
