@@ -264,12 +264,7 @@ data;
             else:
                 parking_space_loads[ps] = self.parking_spaces_loads[ps] + self.waiting_cars[car][0]
 
-        new_parkin_space_loads = self.parking_spaces_loads.copy()
-
-        for ps, load in parking_space_loads.items():
-            new_parkin_space_loads[ps] += load
-
-        min_load = 1000
+        min_load = 100000
         for ps, load in parking_space_loads.items():
             min_load = min(load, min_load)
 
@@ -317,7 +312,7 @@ data;
         total_car = sum(self.number_of_cars.values())
 
         # Used for storing total number of people
-        total_people = total_people = sum(self.parking_spaces_loads.values())
+        total_people = sum(self.parking_spaces_loads.values())
 
         # Store the total number of cars of this epoch
         self.epoch_car_num.append(total_car)

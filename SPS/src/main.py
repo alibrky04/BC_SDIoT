@@ -33,53 +33,57 @@ day = 1
 deviation = 1
 mean = 2
 
+while sim_count < MAX_SIM:
+    distribution = simulator.generateDistribution(genType=1, distType=1, dLength=EPOCH)
+
+    W_CAR = distribution
+
+    controller = Controller(COMMAND, glpk_folder_path, P_LOT, W_CAR[ct], MAX_CAPACITY, MAP_SIZE)
+    
+    while ct < EPOCH:
+        print('***********************************************\n')
+
+        controller.createCars(doChange=True, new_car_num=W_CAR[ct])
+
+        if SIM_TYPE == 1 or SIM_TYPE == 2:
+            controller.writeData(DATAFILE, model=SIM_TYPE)
+            controller.runSolver()
+
+        controller.updateState(model=SIM_TYPE)
+        controller.showData()
+
+        while counter < WAIT_TIME:
+            controller.removeCars()
+            sleep(1)
+            counter += 1
+
+        counter = 0
+        ct += 1
+
+        if ct == day * EPOCH and day < MAX_DAY:
+            ct = 0
+            day += 1
+        
+        print()
+
+    print(f'Simulation {sim_count + 1} has ended.')
+
+    controller.storeData(1, start_hour=EPOCH * (MAX_DAY - 1), sim_count=sim_count)
+
+    print('Data is recorded.')
+    print('Next simulation will start in 5 seconds.\n')
+
+    ct = 0
+    day = 1
+
+    sleep(5)
+    
+    sim_count += 1
+
+"""
 while mean <= 16:
-    while sim_count < MAX_SIM:
-        distribution = simulator.generateDistribution(dMean=mean, dDev=deviation, genType=3, distType=1, dLength=EPOCH)
+    
 
-        W_CAR = distribution
-
-        controller = Controller(COMMAND, glpk_folder_path, P_LOT, W_CAR[ct], MAX_CAPACITY, MAP_SIZE)
-        
-        while ct < EPOCH:
-            print('***********************************************\n')
-
-            controller.createCars(doChange=True, new_car_num=W_CAR[ct])
-
-            if SIM_TYPE == 1 or SIM_TYPE == 2:
-                controller.writeData(DATAFILE, model=SIM_TYPE)
-                controller.runSolver()
-
-            controller.updateState(model=SIM_TYPE)
-            controller.showData()
-
-            while counter < WAIT_TIME:
-                controller.removeCars()
-                sleep(1)
-                counter += 1
-
-            counter = 0
-            ct += 1
-
-            if ct == day * EPOCH and day < MAX_DAY:
-                ct = 0
-                day += 1
-            
-            print()
-
-        print(f'Simulation {sim_count + 1} has ended.')
-
-        controller.storeData(1, start_hour=EPOCH * (MAX_DAY - 1), sim_count=sim_count)
-
-        print('Data is recorded.')
-        print('Next simulation will start in 5 seconds.\n')
-
-        ct = 0
-        day = 1
-
-        sleep(5)
-        
-        sim_count += 1
     
     with open('SPS/Datas/SimData.txt', 'a') as file:
         file.write(f'Mean: {mean}\nEND\n\n')
@@ -87,3 +91,4 @@ while mean <= 16:
     mean += 1
     deviation = mean/2
     sim_count = 0
+"""

@@ -402,7 +402,7 @@ class Simulator:
         plt.legend()
         plt.show()
         
-    def createTransactionPlots(self, distribution, distType = 1):
+    def createTransactionPlots(self, distribution, distType = 2):
         epoch_size = 0
         totalSizes = {'dayTotalSize' : [],
                       'weekTotalSize' : [],
@@ -452,6 +452,9 @@ class Simulator:
         plt.legend()
         plt.grid(linewidth=0.25)
         plt.show()
+
+    def createComparisonPlots(self, distribution, comparisonType):
+        pass
 
     def __del__(self):
         pass
