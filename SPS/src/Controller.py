@@ -249,7 +249,7 @@ data;
             print(f'The file "{self.glpk_folder_path}" does not exist.')
             return None
     
-    def takeOutputForNearModel(self):
+    def takeOutputForNearModel(self, nearModelType = 1):
         assigned_parking_spaces = {}
         parking_space_loads = {}
         total_of_differences = 0
@@ -257,12 +257,27 @@ data;
         for car in self.waiting_cars:
             nearest_parking_lot = self.findNearestParkingLot(car)
             assigned_parking_spaces[car] = nearest_parking_lot
+        
+        if nearModelType == 1: # For people model comparison
+            for car, ps in assigned_parking_spaces.items():
+                if ps in parking_space_loads:
+                    parking_space_loads[ps] += self.waiting_cars[car][0]
+                else:
+                    parking_space_loads[ps] = self.parking_spaces_loads[ps] + self.waiting_cars[car][0]
 
-        for car, ps in assigned_parking_spaces.items():
-            if ps in parking_space_loads:
-                parking_space_loads[ps] += self.waiting_cars[car][0]
-            else:
-                parking_space_loads[ps] = self.parking_spaces_loads[ps] + self.waiting_cars[car][0]
+                for ps in self.parking_spaces_loads:
+                    if ps not in parking_space_loads:
+                        parking_space_loads[ps] = self.parking_spaces_loads[ps]
+        elif nearModelType == 2: # For car model comparison
+            for car, ps in assigned_parking_spaces.items():
+                if ps in parking_space_loads:
+                    parking_space_loads[ps] += 1
+                else:
+                    parking_space_loads[ps] = self.number_of_cars[ps]
+
+                for ps in self.number_of_cars:
+                    if ps not in parking_space_loads:
+                        parking_space_loads[ps] = self.number_of_cars[ps]
 
         min_load = 100000
         for ps, load in parking_space_loads.items():
@@ -273,14 +288,14 @@ data;
 
         return assigned_parking_spaces, parking_space_loads, total_of_differences
         
-    def updateState(self, model = 1):
-        match model:
+    def updateState(self, simType = 1, nearModelType = 1):
+        match simType:
             case 1:
                 assigned_parking_spaces, parking_space_loads, total_of_differences = self.takeOutput()
             case 2:
                 assigned_parking_spaces, parking_space_loads, total_of_differences = self.takeOutputForCarModel()
             case 3:
-                assigned_parking_spaces, parking_space_loads, total_of_differences = self.takeOutputForNearModel()
+                assigned_parking_spaces, parking_space_loads, total_of_differences = self.takeOutputForNearModel(nearModelType)
             case _:
                 assigned_parking_spaces, parking_space_loads, total_of_differences = {}, {}, 0
 
@@ -305,7 +320,7 @@ data;
 
         # Increase the number of cars in parking lots according to the solver
         for car, parking_space in assigned_parking_spaces.items():
-            if parking_space is not None:
+            if parking_space is not None and simType != 3:
                 self.number_of_cars[parking_space] += 1
 
         # Used for storing total number of cars
@@ -392,13 +407,16 @@ data;
         for p, data in self.parking_spaces.items():
             """print(f'{p} x = {data[1]}, {p} y = {data[2]}')
             print(f'{car} x = {self.waiting_cars[car][2]}, {car} y = {self.waiting_cars[car][3]}')"""
+
             length = m.sqrt((data[1] - self.waiting_cars[car][2])**2 +
                             (data[2] - self.waiting_cars[car][3])**2)
             
-            if length < min_length:
+            if length < min_length and self.number_of_cars[p] < self.MAX_CAPACITY:
                 min_length = length
                 nearest_parking_lot = p
-
+        
+        self.number_of_cars[nearest_parking_lot] += 1
         return nearest_parking_lot
+    
     def __del__(self):
         pass
