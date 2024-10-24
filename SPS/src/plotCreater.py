@@ -10,4 +10,6 @@ s = Simulator(days=1, weeks=1, months=1)
 
 # s.createTransactionPlots('normal', distType=1)
 
-s.createNormalDistPlots('mu')
+# s.createNormalDistPlots('mu')
+
+s.createComparisonPlots()

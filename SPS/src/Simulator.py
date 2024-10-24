@@ -453,8 +453,104 @@ class Simulator:
         plt.grid(linewidth=0.25)
         plt.show()
 
-    def createComparisonPlots(self, distribution, comparisonType):
-        pass
+    def createComparisonPlots(self, comparisonType='people-near'):
+        ToD = [[], []]
+        cars = [[], []]
+        people = [[], []]
+        ToDError = [[0] * 24, [0] * 24]
+
+        with open('SPS/Datas/SimData.txt', 'r') as file:
+            lines = file.readlines()
+
+            for line in lines:
+                if line.startswith('g:'):
+                    ToD[0].append([int(num) for num in line.split()[1:] if num.isdigit()])
+                elif line.startswith('c:'):
+                    cars[0].append([int(num) for num in line.split()[1:] if num.isdigit()])
+                elif line.startswith('p:'):
+                    people[0].append([int(num) for num in line.split()[1:] if num.isdigit()])
+
+        with open('SPS/Datas/SimData2.txt', 'r') as file:
+            lines = file.readlines()
+            
+            for line in lines:
+                if line.startswith('g:'):
+                    ToD[1].append([int(num) for num in line.split()[1:] if num.isdigit()])
+                elif line.startswith('c:'):
+                    cars[1].append([int(num) for num in line.split()[1:] if num.isdigit()])
+                elif line.startswith('p:'):
+                    people[1].append([int(num) for num in line.split()[1:] if num.isdigit()])
+
+        transposed_lists = [[zip(*ToD[0]), zip(*cars[0]), zip(*people[0])],
+                            [zip(*ToD[1]), zip(*cars[1]), zip(*people[1])]]
+
+        # ToD, cars, people
+        averages = [[[round(sum(nums) / len(nums)) for nums in group] for group in transposed_lists[0]],
+                    [[round(sum(nums) / len(nums)) for nums in group] for group in transposed_lists[1]]]
+        
+        x_label = 'Hours'
+        y_label = 'ToD'
+
+        if comparisonType == 'people-near':
+            x = self.xAxises['hours']
+            y1 = averages[0][0]
+            y2 = averages[1][0]
+
+            for t in ToD[0]:
+                for i, ToDNumber in enumerate(t):
+                    ToDError[0][i] += abs(ToDNumber - averages[0][0][i])
+
+            for t in ToD[1]:
+                for i, ToDNumber in enumerate(t):
+                    ToDError[1][i] += abs(ToDNumber - averages[1][0][i])
+
+            averageErrors = [[round(x / self.data_num) for x in ToDError[0]],
+                             [round(x / self.data_num) for x in ToDError[1]]]
+
+            y1_label = 'Near-Model'
+            y2_label = 'People-Model'
+        elif comparisonType == 'car-near':
+            x = self.xAxises['hours']
+            y1 = averages[0][0]
+            y2 = averages[1][0]
+
+            for t in ToD[0]:
+                for i, ToDNumber in enumerate(t):
+                    ToDError[0][i] += abs(ToDNumber - averages[0][0][i])
+
+            for t in ToD[1]:
+                for i, ToDNumber in enumerate(t):
+                    ToDError[1][i] += abs(ToDNumber - averages[1][0][i])
+
+            averageErrors = [[round(x / self.data_num) for x in ToDError[0]],
+                             [round(x / self.data_num) for x in ToDError[1]]]
+
+            y1_label = 'Near-Model'
+            y2_label = 'Car-Model'
+        
+        X_Y_Spline1 = make_interp_spline(x, y1)
+        X_Y_Spline2 = make_interp_spline(x, y2)
+
+        X_ = np.linspace(min(x), max(x), 481)
+        Y1_ = X_Y_Spline1(X_)
+        Y2_ = X_Y_Spline2(X_)
+
+        plt.figure(figsize=(6,4), dpi=150)
+            
+        plt.plot(X_, Y1_, marker='o', color='blue', markevery=(0,20), label=y1_label)
+        plt.plot(X_, Y2_, marker='o', color='red', markevery=(0,20), label=y2_label)
+        plt.errorbar(x, y1, yerr=averageErrors[0], ecolor='black', capsize=2.5, capthick=0.5, linewidth=0.15, linestyle='None')
+        plt.errorbar(x, y2, yerr=averageErrors[1], ecolor='black', capsize=2.5, capthick=0.5, linewidth=0.15, linestyle='None')
+        
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+
+        plt.xticks(self.xAxisTicks['halfHours'])
+
+        plt.legend()
+        plt.grid(linewidth=0.25)
+
+        plt.show()
 
     def __del__(self):
         pass
