@@ -98,8 +98,6 @@ while genType < 5:
 """
 while mean <= 16:
     
-
-    
     with open('SPS/Datas/SimData.txt', 'a') as file:
         file.write(f'Mean: {mean}\nEND\n\n')
 

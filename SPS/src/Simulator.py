@@ -1,6 +1,6 @@
 import time
 import random
-import sys
+import seaborn as sns
 import numpy as np
 from scipy.stats import norm
 from scipy.interpolate import make_interp_spline
@@ -22,7 +22,7 @@ class Simulator:
                         'months' : [i for i in range(1, self.simDays['monthDays'] * 24 + 1)],
                         'pLots' : [i for i in range(3, 9)]}
         
-        self.xAxisTicks = {'halfHours' : [i for i in range(1, self.simDays['days'] * 24 + 1) if i % (self.simDays['days'] * 2) == 0],
+        self.xAxisTicks = {'halfHours' : [1] + [i for i in range(1, self.simDays['days'] * 24 + 1) if i % (self.simDays['days'] * 2) == 0],
                             'pLots' : [i for i in range(3, 9)],
                             'weekDays' : [i * 24 for i in range(1, self.simDays['weekDays'] + 1)],
                             'monthWeeks' : [i * 180 for i in range(1, self.months * 4 + 1)]}
@@ -495,38 +495,25 @@ class Simulator:
             x = self.xAxises['hours']
             y1 = averages[0][0]
             y2 = averages[1][0]
-
-            for t in ToD[0]:
-                for i, ToDNumber in enumerate(t):
-                    ToDError[0][i] += abs(ToDNumber - averages[0][0][i])
-
-            for t in ToD[1]:
-                for i, ToDNumber in enumerate(t):
-                    ToDError[1][i] += abs(ToDNumber - averages[1][0][i])
-
-            averageErrors = [[round(x / self.data_num) for x in ToDError[0]],
-                             [round(x / self.data_num) for x in ToDError[1]]]
-
-            y1_label = 'Near-Model'
-            y2_label = 'People-Model'
+            y1_label = 'Nearest Lot Model'
+            y2_label = 'People Model'
         elif comparisonType == 'car-near':
             x = self.xAxises['hours']
             y1 = averages[0][0]
             y2 = averages[1][0]
+            y1_label = 'Nearest Lot Model'
+            y2_label = 'Car Model'
 
-            for t in ToD[0]:
-                for i, ToDNumber in enumerate(t):
-                    ToDError[0][i] += abs(ToDNumber - averages[0][0][i])
+        for t in ToD[0]:
+            for i, ToDNumber in enumerate(t):
+                ToDError[0][i] += abs(ToDNumber - averages[0][0][i])
 
-            for t in ToD[1]:
-                for i, ToDNumber in enumerate(t):
-                    ToDError[1][i] += abs(ToDNumber - averages[1][0][i])
+        for t in ToD[1]:
+            for i, ToDNumber in enumerate(t):
+                ToDError[1][i] += abs(ToDNumber - averages[1][0][i])
 
-            averageErrors = [[round(x / self.data_num) for x in ToDError[0]],
-                             [round(x / self.data_num) for x in ToDError[1]]]
-
-            y1_label = 'Near-Model'
-            y2_label = 'Car-Model'
+        averageErrors = [[round(x / self.data_num) for x in ToDError[0]],
+                            [round(x / self.data_num) for x in ToDError[1]]]
         
         X_Y_Spline1 = make_interp_spline(x, y1)
         X_Y_Spline2 = make_interp_spline(x, y2)
@@ -535,10 +522,31 @@ class Simulator:
         Y1_ = X_Y_Spline1(X_)
         Y2_ = X_Y_Spline2(X_)
 
+        y1 = np.array(y1)
+        y2 = np.array(y2)
+        
+        # Fill Between
+        plt.figure(figsize=(6,4), dpi=150)
+        
+        plt.scatter(x, y1, color='orange', label=y1_label)
+        plt.fill_between(x, y1 - averageErrors[0], y1 + averageErrors[0], color='orange', alpha=0.2)
+        plt.scatter(x, y2, color='green', label=y2_label)
+        plt.fill_between(x, y2 - averageErrors[1], y2 + averageErrors[1], color='green', alpha=0.2)
+
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+
+        plt.xticks(self.xAxisTicks['halfHours'])
+
+        plt.legend(fontsize='6', loc='upper left')
+        plt.grid(linewidth=0.25)
+        plt.margins(x=0.014, y=0.015)
+        
+        # Error Bar
         plt.figure(figsize=(6,4), dpi=150)
             
-        plt.plot(X_, Y1_, marker='o', color='blue', markevery=(0,20), label=y1_label)
-        plt.plot(X_, Y2_, marker='o', color='red', markevery=(0,20), label=y2_label)
+        plt.scatter(x, y1, marker='o', color='blue', label=y1_label)
+        plt.scatter(x, y2, marker='o', color='red', label=y2_label)
         plt.errorbar(x, y1, yerr=averageErrors[0], ecolor='black', capsize=2.5, capthick=0.5, linewidth=0.15, linestyle='None')
         plt.errorbar(x, y2, yerr=averageErrors[1], ecolor='black', capsize=2.5, capthick=0.5, linewidth=0.15, linestyle='None')
         
@@ -547,8 +555,20 @@ class Simulator:
 
         plt.xticks(self.xAxisTicks['halfHours'])
 
-        plt.legend()
+        plt.legend(fontsize='6', loc='upper left')
         plt.grid(linewidth=0.25)
+        plt.margins(x=0.014, y=0.015)
+
+        #Heat Map
+        plt.figure(figsize=(6,4), dpi=150)
+
+        heatmap, xedges, yedges = np.histogram2d(y1, y2, bins=30)
+
+        sns.heatmap(heatmap.T, cmap='Blues', cbar=True, 
+                    xticklabels=10, yticklabels=10)
+
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
 
         plt.show()
 

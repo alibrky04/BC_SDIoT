@@ -265,20 +265,17 @@ data;
                 else:
                     parking_space_loads[ps] = self.parking_spaces_loads[ps] + self.waiting_cars[car][0]
 
-                for ps in self.parking_spaces_loads:
-                    if ps not in parking_space_loads:
-                        parking_space_loads[ps] = self.parking_spaces_loads[ps]
+            for ps in self.parking_spaces_loads:
+                if ps not in parking_space_loads:
+                    parking_space_loads[ps] = self.parking_spaces_loads[ps]
         elif nearModelType == 2: # For car model comparison
             for car, ps in assigned_parking_spaces.items():
-                if ps in parking_space_loads:
-                    parking_space_loads[ps] += 1
-                else:
+                parking_space_loads[ps] = self.number_of_cars[ps]
+
+            for ps in self.number_of_cars:
+                if ps not in parking_space_loads:
                     parking_space_loads[ps] = self.number_of_cars[ps]
-
-                for ps in self.number_of_cars:
-                    if ps not in parking_space_loads:
-                        parking_space_loads[ps] = self.number_of_cars[ps]
-
+        
         min_load = 100000
         for ps, load in parking_space_loads.items():
             min_load = min(load, min_load)
