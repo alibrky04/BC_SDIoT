@@ -5,6 +5,7 @@ import numpy as np
 from scipy.stats import norm
 from scipy.interpolate import make_interp_spline
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes, mark_inset
 
 plt.rcParams['grid.linewidth'] = 0.25
 
@@ -306,14 +307,16 @@ class Simulator:
                 x = self.xAxises['hours']
                 y1 = averages[0]
                 y2 = averages[1]
-
+                
+                """
                 for g in gap:
                     for i, gapNumber in enumerate(g):
                         gapError[i] += abs(gapNumber - averages[0][i])
 
                 averageErrors = [round(x / self.data_num) for x in gapError]
-
-                x_label = 'Hours'
+                """
+                
+                x_label = 'Time (Hours)'
                 y1_label = 'Total of Differences (ToD)'
                 y2_label = 'Cars'
 
@@ -322,13 +325,15 @@ class Simulator:
                 y1 = averages[2]
                 y2 = averages[1]
 
+                """
                 for p in people:
                     for i, peopleNumber in enumerate(p):
                         peopleError[i] += abs(peopleNumber - averages[1][i])
 
                 averageErrors = [round(x / self.data_num) for x in peopleError]
+                """
 
-                x_label = 'Hours'
+                x_label = 'Time (Hours)'
                 y1_label = 'People'
                 y2_label = 'Cars'
 
@@ -352,12 +357,12 @@ class Simulator:
             plt.xticks(self.xAxisTicks['halfHours'])
             ax1.set_xlabel(x_label)
 
-            ax1.errorbar(x, y1, yerr=averageErrors, ecolor='black', capsize=2.5, capthick=0.5, linewidth=0.15, linestyle='None')
+            # ax1.errorbar(x, y1, yerr=averageErrors, ecolor='black', capsize=2.5, capthick=0.5, linewidth=0.15, linestyle='None')
 
             lines = [line1, line2]
             labels = [line.get_label() for line in lines]
 
-            plt.legend(lines, labels, loc='upper left')
+            plt.legend(lines, labels, loc='upper left', fontsize='8')
             ax1.grid(linewidth=0.25)
                         
             plt.show()
@@ -488,7 +493,7 @@ class Simulator:
         averages = [[[round(sum(nums) / len(nums)) for nums in group] for group in transposed_lists[0]],
                     [[round(sum(nums) / len(nums)) for nums in group] for group in transposed_lists[1]]]
         
-        x_label = 'Hours'
+        x_label = 'Time (Hours)'
         y_label = 'ToD'
 
         if comparisonType == 'people-near':
@@ -526,49 +531,31 @@ class Simulator:
         y2 = np.array(y2)
         
         # Fill Between
-        plt.figure(figsize=(6,4), dpi=150)
+        fig, ax = plt.subplots(figsize=(6, 4), dpi=150)
         
-        plt.scatter(x, y1, color='orange', label=y1_label)
-        plt.fill_between(x, y1 - averageErrors[0], y1 + averageErrors[0], color='orange', alpha=0.2)
-        plt.scatter(x, y2, color='green', label=y2_label)
-        plt.fill_between(x, y2 - averageErrors[1], y2 + averageErrors[1], color='green', alpha=0.2)
+        ax.plot(x, y1, color='orange', label=y1_label)
+        ax.fill_between(x, y1 - averageErrors[0], y1 + averageErrors[0], color='orange', alpha=0.2)
+        ax.plot(x, y2, color='green', label=y2_label)
+        ax.fill_between(x, y2 - averageErrors[1], y2 + averageErrors[1], color='green', alpha=0.2)
 
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+        ax.set_xticks(self.xAxisTicks['halfHours'])
+        ax.legend(fontsize='6', loc='upper left')
+        ax.grid(linewidth=0.25)
+        ax.margins(x=0.014, y=0.015)
 
-        plt.xticks(self.xAxisTicks['halfHours'])
+        inset_size = "30%"
+        axins = inset_axes(ax, width=inset_size, height=inset_size, loc='center right') 
+        axins.plot(x, y1, color='orange')
+        axins.fill_between(x, y1 - averageErrors[0], y1 + averageErrors[0], color='orange', alpha=0.2)
+        axins.plot(x, y2, color='green')
+        axins.fill_between(x, y2 - averageErrors[1], y2 + averageErrors[1], color='green', alpha=0.2)
 
-        plt.legend(fontsize='6', loc='upper left')
-        plt.grid(linewidth=0.25)
-        plt.margins(x=0.014, y=0.015)
-        
-        # Error Bar
-        plt.figure(figsize=(6,4), dpi=150)
-            
-        plt.scatter(x, y1, marker='o', color='blue', label=y1_label)
-        plt.scatter(x, y2, marker='o', color='red', label=y2_label)
-        plt.errorbar(x, y1, yerr=averageErrors[0], ecolor='black', capsize=2.5, capthick=0.5, linewidth=0.15, linestyle='None')
-        plt.errorbar(x, y2, yerr=averageErrors[1], ecolor='black', capsize=2.5, capthick=0.5, linewidth=0.15, linestyle='None')
-        
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
+        axins.set_xlim(17, 22)
+        axins.set_ylim(0, 10)
 
-        plt.xticks(self.xAxisTicks['halfHours'])
-
-        plt.legend(fontsize='6', loc='upper left')
-        plt.grid(linewidth=0.25)
-        plt.margins(x=0.014, y=0.015)
-
-        #Heat Map
-        plt.figure(figsize=(6,4), dpi=150)
-
-        heatmap, xedges, yedges = np.histogram2d(y1, y2, bins=30)
-
-        sns.heatmap(heatmap.T, cmap='Blues', cbar=True, 
-                    xticklabels=10, yticklabels=10)
-
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
+        mark_inset(ax, axins, loc1=2, loc2=4, fc="none", ec="0.5")
 
         plt.show()
 
