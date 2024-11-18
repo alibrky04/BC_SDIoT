@@ -545,8 +545,8 @@ class Simulator:
         ax.grid(linewidth=0.25)
         ax.margins(x=0.014, y=0.015)
 
-        inset_size = "30%"
-        axins = inset_axes(ax, width=inset_size, height=inset_size, loc='center right') 
+        inset_size = "27%"
+        axins = inset_axes(ax, width=inset_size, height=inset_size, bbox_to_anchor=(0.05, 0.22, 1, 1), bbox_transform=ax.transAxes, loc='lower center') 
         axins.plot(x, y1, color='orange')
         axins.fill_between(x, y1 - averageErrors[0], y1 + averageErrors[0], color='orange', alpha=0.2)
         axins.plot(x, y2, color='green')
