@@ -181,7 +181,6 @@ class Simulator:
             
             for line in lines:
                 if not line.startswith('-'):
-                    fig_type = 'fig1'
                     if line.startswith('g:'):
                         gap = [int(num) for num in line.split()[1:] if num.isdigit()]
                     elif line.startswith('c:'):
@@ -558,6 +557,9 @@ class Simulator:
         mark_inset(ax, axins, loc1=2, loc2=4, fc="none", ec="0.5")
 
         plt.show()
+    
+    def createFairnessPlots(self):
+        pass
 
     def __del__(self):
         pass

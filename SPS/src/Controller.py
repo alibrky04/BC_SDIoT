@@ -2,10 +2,11 @@ import random
 import subprocess
 import re
 import math as m
+import json
 from Simulator import Simulator
 
 class Controller:
-    def __init__(self, COMMAND, glpk_folder_path, P_LOT = 5, W_CAR = 5, MAX_CAPACITY = 10, MAP_SIZE = 50):
+    def __init__(self, COMMAND, glpk_folder_path, distribution, P_LOT = 5, W_CAR = 5, MAX_CAPACITY = 10, MAP_SIZE = 50):
         self.simulator = Simulator()
 
         self.P_LOT = P_LOT
@@ -14,6 +15,7 @@ class Controller:
         self.MAP_SIZE = MAP_SIZE
         self.COMMAND = COMMAND
         self.glpk_folder_path = glpk_folder_path
+        self.distribution = distribution
 
         # parking_spaces = [[park state, car_load, res time], x, y]
         self.parking_spaces = {f'p{i + 1}' : 
@@ -30,6 +32,7 @@ class Controller:
         self.total_of_differences = []
         self.epoch_car_num = []
         self.epoch_people_num = []
+        self.epoch_lot_assigned_car_num = [{f'p{i + 1}' : 0 for i in range(self.P_LOT)} for _ in range(len(self.distribution))]
     
     def createCars(self, doChange = False, new_car_num = 5):
         if doChange:
@@ -285,7 +288,7 @@ data;
 
         return assigned_parking_spaces, parking_space_loads, total_of_differences
         
-    def updateState(self, simType = 1, nearModelType = 1):
+    def updateState(self, ct=0, isMaxday=0, simType = 1, nearModelType = 1):
         match simType:
             case 1:
                 assigned_parking_spaces, parking_space_loads, total_of_differences = self.takeOutput()
@@ -318,6 +321,8 @@ data;
         # Increase the number of cars in parking lots according to the solver
         for car, parking_space in assigned_parking_spaces.items():
             if parking_space is not None and simType != 3:
+                if isMaxday: 
+                    self.epoch_lot_assigned_car_num[ct][parking_space] += 1
                 self.number_of_cars[parking_space] += 1
 
         # Used for storing total number of cars
@@ -368,15 +373,8 @@ data;
                     self.showParkingLots()
                     print()
         
-    def storeData(self, data_type, start_hour = 0, sim_count = 0):
+    def storeData(self, start_hour = 0, sim_count = 0):
         with open('SPS/Datas/SimData.txt', 'a') as file:
-            if data_type == 1:
-                file.write('fig1\n')
-            elif data_type == 2:
-                file.write(f'fig2 ({self.P_LOT} plot)\n')
-            elif data_type == 3:
-                file.write('fig3\n')
-
             file.write('g: ')
             for g in self.total_of_differences[start_hour:]:
                 file.write(str(g) + ' ')
@@ -392,6 +390,17 @@ data;
             file.write('p: ')
             for total_people in self.epoch_people_num[start_hour:]:
                 file.write(str(total_people) + ' ')
+
+            file.write('\n')
+
+            file.write('tac: ')
+            for assigned_car in self.distribution:
+                file.write(str(assigned_car) + ' ')
+
+            file.write('\n')
+
+            file.write('lacn:')
+            json.dump(self.epoch_lot_assigned_car_num, file, indent=4)
 
             if sim_count < 20:
                 file.write('\n\n--------------------\n\n')
