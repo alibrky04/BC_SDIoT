@@ -217,7 +217,7 @@ data;
 
                 car_assignments_pattern = re.compile(r'isCarAssigned\[(\w+),(\w+)\].val = (\d+)')
                 num_of_cars_pattern = re.compile(r'numOfCar\[(\w+)\].val = (\d+)')
-                total_of_differences_pattern = re.compile(r'total_of_differences.val = (\d+)')
+                total_of_differences_pattern = re.compile(r'Total_of_Differences.val = (\d+)')
 
                 for line in solver_output.split('\n'):
                     if line.strip():
@@ -288,7 +288,7 @@ data;
 
         return assigned_parking_spaces, parking_space_loads, total_of_differences
         
-    def updateState(self, ct=0, isMaxday=0, simType = 1, nearModelType = 1):
+    def updateState(self, ct=0, isMaxday=0, simType = 2, nearModelType = 1):
         match simType:
             case 1:
                 assigned_parking_spaces, parking_space_loads, total_of_differences = self.takeOutput()

@@ -5,14 +5,14 @@ from Simulator import Simulator
 
 simulator = Simulator()
 
-EPOCH = 24
-WAIT_TIME = 10
+EPOCH = 12
+WAIT_TIME = 2
 MAX_SIM = 20
-MAX_DAY = 2
+MAX_DAY = 1
 P_LOT = 5
 MAX_CAPACITY = 25
 MAP_SIZE = 50
-SIM_TYPE = 1
+SIM_TYPE = 2
 nearModelType = 1
 
 if SIM_TYPE == 1:
@@ -33,7 +33,7 @@ sim_count = 0
 day = 1
 #deviation = 1
 #mean = 2
-genType = 1
+genType = 2
 distType = 1
 
 while sim_count < MAX_SIM:
