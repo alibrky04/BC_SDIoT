@@ -14,8 +14,8 @@ param :
 
 param :
         initNumOfCar :=
-    p1     14
-    p2     15
+    p1     15
+    p2     13
     p3     14
-    p4     15
-    p5     14;
+    p4     12
+    p5     15;
