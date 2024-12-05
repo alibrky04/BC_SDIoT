@@ -321,9 +321,9 @@ data;
         # Increase the number of cars in parking lots according to the solver
         for car, parking_space in assigned_parking_spaces.items():
             if parking_space is not None and simType != 3:
-                if isMaxday: 
-                    self.epoch_lot_assigned_car_num[ct][parking_space] += 1
                 self.number_of_cars[parking_space] += 1
+            if isMaxday:
+                self.epoch_lot_assigned_car_num[ct][parking_space] += 1
 
         # Used for storing total number of cars
         total_car = sum(self.number_of_cars.values())
@@ -374,7 +374,7 @@ data;
                     print()
         
     def storeData(self, start_hour = 0, sim_count = 0):
-        with open('SPS/Datas/SimData.txt', 'a') as file:
+        with open('SPS/Datas/SimData2.txt', 'a') as file:
             file.write('g: ')
             for g in self.total_of_differences[start_hour:]:
                 file.write(str(g) + ' ')

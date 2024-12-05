@@ -7,13 +7,13 @@ simulator = Simulator()
 
 EPOCH = 24
 WAIT_TIME = 10
-MAX_SIM = 20
+MAX_SIM = 1
 MAX_DAY = 2
 P_LOT = 5
 MAX_CAPACITY = 25
 MAP_SIZE = 50
 SIM_TYPE = 3
-nearModelType = 2
+nearModelType = 1
 
 if SIM_TYPE == 1:
     COMMAND = 'glpsol --model SPS.mod --data SPS.dat --display SPS.out'

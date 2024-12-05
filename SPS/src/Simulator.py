@@ -1,3 +1,4 @@
+import json
 import time
 import random
 import seaborn as sns
@@ -557,9 +558,120 @@ class Simulator:
         mark_inset(ax, axins, loc1=2, loc2=4, fc="none", ec="0.5")
 
         plt.show()
+
+    def createFairnessPlots(self, weight_pairs, lot_capacities):
+        data1 = {}
+        data2 = {}
+
+        with open('SPS/Datas/SimData.txt', 'r') as file:
+            lines = file.readlines()
+
+        for line in lines:
+            line = line.strip()
+            if line.startswith('tac:'):
+                tac = list(map(int, line.split(':')[1].split()))
+                data1['tac'] = tac
+            elif line.startswith('lacn:'):
+                lacn_json = line.split(':', 1)[1].strip()
+                lacn = json.loads(lacn_json)
+                data1['lacn'] = lacn
+
+        with open('SPS/Datas/SimData2.txt', 'r') as file:
+            lines = file.readlines()
+
+        for line in lines:
+            line = line.strip()
+            if line.startswith('tac:'):
+                tac = list(map(int, line.split(':')[1].split()))
+                data2['tac'] = tac
+            elif line.startswith('lacn:'):
+                lacn_json = line.split(':', 1)[1].strip()
+                lacn = json.loads(lacn_json)
+                data2['lacn'] = lacn
+
+        fairness_metrics1 = self.calculateFairnessMetric(weight_pairs, lot_capacities, data1)
+        fairness_metrics2 = self.calculateFairnessMetric(weight_pairs, lot_capacities, data2)
+
+        x_labels = [f'{w1:.1f}-{w2:.1f}' for w1, w2 in weight_pairs]
+        x = range(len(x_labels))
+
+        plt.figure(figsize=(6, 4), dpi=150)
+        plt.plot(x, fairness_metrics1, marker='o', label='BePaS', color='blue')
+        plt.plot(x, fairness_metrics2, marker='o', label='Nearest Lot Model', color='red')
+        plt.xticks(x, x_labels, rotation=45)
+        
+        plt.xlabel('w1-w2')
+        plt.ylabel('Fairness')
+        
+        plt.grid()
+        plt.legend()
+        plt.tight_layout()
+        
+        plt.show()
     
-    def createFairnessPlots(self):
-        pass
+    def createFairnessWeightsPlot(self, weight_pairs, lot_capacities):
+        data = {}
+        with open('SPS/Datas/SimData.txt', 'r') as file:
+            lines = file.readlines()
+
+        for line in lines:
+            line = line.strip()
+            if line.startswith('tac:'):
+                tac = list(map(int, line.split(':')[1].split()))
+                data['tac'] = tac
+            elif line.startswith('lacn:'):
+                lacn_json = line.split(':', 1)[1].strip()
+                lacn = json.loads(lacn_json)
+                data['lacn'] = lacn
+
+        fairness_metrics = self.calculateFairnessMetric(weight_pairs, lot_capacities, data)
+
+        x_labels = [f'{w1:.1f}-{w2:.1f}' for w1, w2 in weight_pairs]
+        plt.figure(figsize=(12, 6), dpi=150)
+        plt.bar(x_labels, fairness_metrics, color='skyblue', label='Fairness')
+        
+        plt.xlabel('w1-w2')
+        plt.ylabel('Fairness')
+        
+        plt.tight_layout()
+        plt.grid()
+        plt.legend()
+
+        plt.show()
+
+    def calculateFairnessMetric(self, weight_pairs, lot_capacities, data):
+        tac = data['tac']
+        lacn = data['lacn']
+
+        total_p_sums = {f'p{i+1}': 0 for i in range(5)}
+
+        for lots in lacn:
+            for i in range(5):
+                p_key = f'p{i+1}'
+                total_p_sums[p_key] += lots[p_key]
+
+        F_j_values = []
+
+        for weights in weight_pairs:
+            w1, w2 = weights
+            phi_j = []
+            psi_j = []
+            F_j = []
+
+            for i in range(len(lot_capacities)):
+                W = tac[i]
+                phi_j.append(total_p_sums[f'p{i+1}'] / lot_capacities[i])
+                psi_j.append(total_p_sums[f'p{i+1}'] / W)
+                F_j.append(w1 * phi_j[-1] + w2 * psi_j[-1])
+
+            F_j_values.append(F_j)
+
+        std_devs = [np.std(fj) for fj in F_j_values]
+        max_min_differences = [max(fj) - min(fj) for fj in F_j_values]
+
+        fairness_metrics = [1 - (std / dif if dif != 0 else 0) for std, dif in zip(std_devs, max_min_differences)]
+
+        return fairness_metrics
 
     def __del__(self):
         pass
