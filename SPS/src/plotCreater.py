@@ -17,6 +17,8 @@ lot_capacities = [25, 25, 25, 25, 25]
 
 # s.createComparisonPlots(comparisonType='car-near')
 
-s.createFairnessPlots(weight_pairs, lot_capacities)
+# s.createFairnessPlots(weight_pairs, lot_capacities)
+
+s.createFairnessPlotsForDifMetrics(weight_pairs, lot_capacities)
 
 # s.createFairnessWeightsPlot(weight_pairs, lot_capacities)

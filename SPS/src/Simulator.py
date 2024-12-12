@@ -609,34 +609,86 @@ class Simulator:
         
         plt.show()
     
-    def createFairnessWeightsPlot(self, weight_pairs, lot_capacities):
-        data = {}
+    def createFairnessPlotsForDifMetrics(self, weight_pairs, lot_capacities):
+        data1 = {}
+        data2 = {}
+
         with open('SPS/Datas/SimData.txt', 'r') as file:
             lines = file.readlines()
-
         for line in lines:
             line = line.strip()
             if line.startswith('tac:'):
                 tac = list(map(int, line.split(':')[1].split()))
-                data['tac'] = tac
+                data1['tac'] = tac
             elif line.startswith('lacn:'):
                 lacn_json = line.split(':', 1)[1].strip()
                 lacn = json.loads(lacn_json)
-                data['lacn'] = lacn
+                data1['lacn'] = lacn
 
-        fairness_metrics = self.calculateFairnessMetric(weight_pairs, lot_capacities, data)
+        with open('SPS/Datas/SimData2.txt', 'r') as file:
+            lines = file.readlines()
+        for line in lines:
+            line = line.strip()
+            if line.startswith('tac:'):
+                tac = list(map(int, line.split(':')[1].split()))
+                data2['tac'] = tac
+            elif line.startswith('lacn:'):
+                lacn_json = line.split(':', 1)[1].strip()
+                lacn = json.loads(lacn_json)
+                data2['lacn'] = lacn
+
+        results1 = self.calculateFairnessMetric(weight_pairs, lot_capacities, data1)
+        results2 = self.calculateFairnessMetric(weight_pairs, lot_capacities, data2)
+
+        fairness_metrics1 = results1["fairness_metrics"]
+        phi_j_averages1 = results1["phi_j_averages"]
+        psi_j_averages1 = results1["psi_j_averages"]
+
+        fairness_metrics2 = results2["fairness_metrics"]
+        phi_j_averages2 = results2["phi_j_averages"]
+        psi_j_averages2 = results2["psi_j_averages"]
 
         x_labels = [f'{w1:.1f}-{w2:.1f}' for w1, w2 in weight_pairs]
-        plt.figure(figsize=(12, 6), dpi=150)
-        plt.bar(x_labels, fairness_metrics, color='skyblue', label='Fairness')
-        
-        plt.xlabel('w1-w2')
-        plt.ylabel('Fairness')
-        
-        plt.tight_layout()
-        plt.grid()
-        plt.legend()
+        x = range(len(x_labels))
+        bar_width = 0.25
 
+        fig, axes = plt.subplots(1, 3, figsize=(18, 6), dpi=150)
+
+        color_be_pas = '#38459C'
+        color_nearest_lot = '#A01728'
+        color_capacity_be_pas = '#E85D04'
+        color_capacity_nearest_lot = '#D00000'
+        color_tod_be_pas = '#005B96'
+        color_tod_nearest_lot = '#288347'
+
+        axes[0].bar([p - bar_width for p in x], fairness_metrics1, bar_width, label='BePaS', color=color_be_pas)
+        axes[0].bar([p + bar_width for p in x], fairness_metrics2, bar_width, label='Nearest Lot', color=color_nearest_lot)
+        axes[0].set_xticks(x)
+        axes[0].set_xticklabels(x_labels, rotation=45)
+        axes[0].set_xlabel('w1-w2')
+        axes[0].set_ylabel('Composite Metric')
+        axes[0].legend(loc='upper left', bbox_to_anchor=(1, 1))
+        axes[0].grid(axis='y', linestyle='--', alpha=0.7)
+
+        axes[1].bar([p - bar_width for p in x], phi_j_averages1, bar_width, label='BePaS', color=color_capacity_be_pas)
+        axes[1].bar([p + bar_width for p in x], phi_j_averages2, bar_width, label='Nearest Lot', color=color_capacity_nearest_lot)
+        axes[1].set_xticks(x)
+        axes[1].set_xticklabels(x_labels, rotation=45)
+        axes[1].set_xlabel('w1-w2')
+        axes[1].set_ylabel('Capacity Metric')
+        axes[1].legend(loc='upper left', bbox_to_anchor=(1, 1))
+        axes[1].grid(axis='y', linestyle='--', alpha=0.7)
+
+        axes[2].bar([p - bar_width for p in x], psi_j_averages1, bar_width, label='BePaS', color=color_tod_be_pas)
+        axes[2].bar([p + bar_width for p in x], psi_j_averages2, bar_width, label='Nearest Lot', color=color_tod_nearest_lot)
+        axes[2].set_xticks(x)
+        axes[2].set_xticklabels(x_labels, rotation=45)
+        axes[2].set_xlabel('w1-w2')
+        axes[2].set_ylabel('ToD Metric')
+        axes[2].legend(loc='upper left', bbox_to_anchor=(1, 1))
+        axes[2].grid(axis='y', linestyle='--', alpha=0.7)
+
+        plt.tight_layout()
         plt.show()
 
     def calculateFairnessMetric(self, weight_pairs, lot_capacities, data):
@@ -651,6 +703,8 @@ class Simulator:
                 total_p_sums[p_key] += lots[p_key]
 
         F_j_values = []
+        phi_j_averages = []
+        psi_j_averages = []
 
         for weights in weight_pairs:
             w1, w2 = weights
@@ -665,13 +719,19 @@ class Simulator:
                 F_j.append(w1 * phi_j[-1] + w2 * psi_j[-1])
 
             F_j_values.append(F_j)
+            phi_j_averages.append(np.mean(phi_j))
+            psi_j_averages.append(np.mean(psi_j))
 
         std_devs = [np.std(fj) for fj in F_j_values]
         max_min_differences = [max(fj) - min(fj) for fj in F_j_values]
 
         fairness_metrics = [1 - (std / dif if dif != 0 else 0) for std, dif in zip(std_devs, max_min_differences)]
 
-        return fairness_metrics
+        return {
+            "fairness_metrics": fairness_metrics,
+            "phi_j_averages": phi_j_averages,
+            "psi_j_averages": psi_j_averages,
+        }
 
     def __del__(self):
         pass
