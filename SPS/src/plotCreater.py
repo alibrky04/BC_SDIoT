@@ -1,8 +1,10 @@
+import numpy as np
 from Simulator import Simulator
 
 s = Simulator(days=1, weeks=1, months=1)
 
-weight_pairs = [(i / 10, 1 - (i / 10)) for i in range(1, 10)]
+epsilon = 1e-6
+weight_pairs = [(w, 1 - w) for w in np.linspace(epsilon, 1 - epsilon, 100)]
 lot_capacities = [25, 25, 25, 25, 25]
 
 # s.createStandartPlots('t_g')
@@ -17,8 +19,8 @@ lot_capacities = [25, 25, 25, 25, 25]
 
 # s.createComparisonPlots(comparisonType='car-near')
 
-# s.createFairnessPlots(weight_pairs, lot_capacities)
+s.createFairnessPlots(weight_pairs, lot_capacities)
 
-s.createFairnessPlotsForDifMetrics(weight_pairs, lot_capacities)
+#s.createFairnessPlotsForDifMetrics(weight_pairs, lot_capacities)
 
 # s.createFairnessWeightsPlot(weight_pairs, lot_capacities)

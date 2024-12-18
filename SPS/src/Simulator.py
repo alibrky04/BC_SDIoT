@@ -589,18 +589,18 @@ class Simulator:
                 lacn = json.loads(lacn_json)
                 data2['lacn'] = lacn
 
-        fairness_metrics1 = self.calculateFairnessMetric(weight_pairs, lot_capacities, data1)
-        fairness_metrics2 = self.calculateFairnessMetric(weight_pairs, lot_capacities, data2)
+        fairness_metrics1 = self.calculateFairnessMetric(weight_pairs, lot_capacities, data1)["fairness_metrics"]
+        fairness_metrics2 = self.calculateFairnessMetric(weight_pairs, lot_capacities, data2)["fairness_metrics"]
 
-        x_labels = [f'{w1:.1f}-{w2:.1f}' for w1, w2 in weight_pairs]
-        x = range(len(x_labels))
+        x_labels = ['0-1', '1-0']
+        x = np.linspace(0, len(weight_pairs) - 1, len(weight_pairs))
 
         plt.figure(figsize=(6, 4), dpi=150)
-        plt.plot(x, fairness_metrics1, marker='o', label='BePaS', color='blue')
-        plt.plot(x, fairness_metrics2, marker='o', label='Nearest Lot Model', color='red')
-        plt.xticks(x, x_labels, rotation=45)
+        plt.plot(x, fairness_metrics1, marker='o', label='BePaS', color='blue', markevery=5)
+        plt.plot(x, fairness_metrics2, marker='o', label='Nearest Lot Model', color='red', markevery=10)
+        plt.xticks([0, len(weight_pairs) - 1], x_labels, rotation=45)
         
-        plt.xlabel('w1-w2')
+        plt.xlabel('Weight')
         plt.ylabel('Fairness')
         
         plt.grid()
@@ -610,9 +610,14 @@ class Simulator:
         plt.show()
     
     def createFairnessPlotsForDifMetrics(self, weight_pairs, lot_capacities):
+        import numpy as np
+        import json
+        import matplotlib.pyplot as plt
+
         data1 = {}
         data2 = {}
 
+        # Load data1
         with open('SPS/Datas/SimData.txt', 'r') as file:
             lines = file.readlines()
         for line in lines:
@@ -625,6 +630,7 @@ class Simulator:
                 lacn = json.loads(lacn_json)
                 data1['lacn'] = lacn
 
+        # Load data2
         with open('SPS/Datas/SimData2.txt', 'r') as file:
             lines = file.readlines()
         for line in lines:
@@ -637,6 +643,7 @@ class Simulator:
                 lacn = json.loads(lacn_json)
                 data2['lacn'] = lacn
 
+        # Calculate metrics
         results1 = self.calculateFairnessMetric(weight_pairs, lot_capacities, data1)
         results2 = self.calculateFairnessMetric(weight_pairs, lot_capacities, data2)
 
@@ -648,44 +655,40 @@ class Simulator:
         phi_j_averages2 = results2["phi_j_averages"]
         psi_j_averages2 = results2["psi_j_averages"]
 
-        x_labels = [f'{w1:.1f}-{w2:.1f}' for w1, w2 in weight_pairs]
-        x = range(len(x_labels))
-        bar_width = 0.25
+        x_labels = ['0.0-1.0', '1.0-0.0']
+        x = np.linspace(0, len(weight_pairs) - 1, len(weight_pairs))
 
+        # Plot settings
         fig, axes = plt.subplots(1, 3, figsize=(18, 6), dpi=150)
 
-        color_be_pas = '#38459C'
-        color_nearest_lot = '#A01728'
-        color_capacity_be_pas = '#E85D04'
-        color_capacity_nearest_lot = '#D00000'
-        color_tod_be_pas = '#005B96'
-        color_tod_nearest_lot = '#288347'
-
-        axes[0].bar([p - bar_width for p in x], fairness_metrics1, bar_width, label='BePaS', color=color_be_pas)
-        axes[0].bar([p + bar_width for p in x], fairness_metrics2, bar_width, label='Nearest Lot', color=color_nearest_lot)
-        axes[0].set_xticks(x)
-        axes[0].set_xticklabels(x_labels, rotation=45)
-        axes[0].set_xlabel('w1-w2')
+        # Fairness Metrics
+        axes[0].plot(x, fairness_metrics1, label='BePaS', color='#38459C', linestyle='-', marker='o', markevery=5)
+        axes[0].plot(x, fairness_metrics2, label='Nearest Lot', color='#A01728', linestyle='-', marker='o', markevery=5)
+        axes[0].set_xticks([0, len(weight_pairs) - 1])
+        axes[0].set_xticklabels(x_labels)
+        axes[0].set_xlabel('Weight')
         axes[0].set_ylabel('Composite Metric')
-        axes[0].legend(loc='upper left', bbox_to_anchor=(1, 1))
+        axes[0].legend(loc='upper left', frameon=True)
         axes[0].grid(axis='y', linestyle='--', alpha=0.7)
 
-        axes[1].bar([p - bar_width for p in x], phi_j_averages1, bar_width, label='BePaS', color=color_capacity_be_pas)
-        axes[1].bar([p + bar_width for p in x], phi_j_averages2, bar_width, label='Nearest Lot', color=color_capacity_nearest_lot)
-        axes[1].set_xticks(x)
-        axes[1].set_xticklabels(x_labels, rotation=45)
-        axes[1].set_xlabel('w1-w2')
+        # Capacity Metrics
+        axes[1].plot(x, phi_j_averages1, label='BePaS', color='#E85D04', linestyle='-', marker='o', markevery=5)
+        axes[1].plot(x, phi_j_averages2, label='Nearest Lot', color='#D00000', linestyle='-', marker='o', markevery=5)
+        axes[1].set_xticks([0, len(weight_pairs) - 1])  # Only show edges
+        axes[1].set_xticklabels(x_labels)
+        axes[1].set_xlabel('Weight')
         axes[1].set_ylabel('Capacity Metric')
-        axes[1].legend(loc='upper left', bbox_to_anchor=(1, 1))
+        axes[1].legend(loc='upper left', bbox_to_anchor=(0, 0.9), frameon=True)
         axes[1].grid(axis='y', linestyle='--', alpha=0.7)
 
-        axes[2].bar([p - bar_width for p in x], psi_j_averages1, bar_width, label='BePaS', color=color_tod_be_pas)
-        axes[2].bar([p + bar_width for p in x], psi_j_averages2, bar_width, label='Nearest Lot', color=color_tod_nearest_lot)
-        axes[2].set_xticks(x)
-        axes[2].set_xticklabels(x_labels, rotation=45)
-        axes[2].set_xlabel('w1-w2')
+        # ToD Metrics
+        axes[2].plot(x, psi_j_averages1, label='BePaS', color='#005B96', linestyle='-', marker='o', markevery=5)
+        axes[2].plot(x, psi_j_averages2, label='Nearest Lot', color='#288347', linestyle='-', marker='o', markevery=5)
+        axes[2].set_xticks([0, len(weight_pairs) - 1])
+        axes[2].set_xticklabels(x_labels)
+        axes[2].set_xlabel('Weight')
         axes[2].set_ylabel('ToD Metric')
-        axes[2].legend(loc='upper left', bbox_to_anchor=(1, 1))
+        axes[2].legend(loc='upper left', bbox_to_anchor=(0, 0.9), frameon=True)
         axes[2].grid(axis='y', linestyle='--', alpha=0.7)
 
         plt.tight_layout()
